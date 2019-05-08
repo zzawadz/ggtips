@@ -1,0 +1,27 @@
+Package: ggtips
+Type: Package
+Title: Interactive Tooltips for ggplots
+Version: 0.0.1
+Authors@R: c(person("Jakub", "Jankiewicz", role = "aut",
+                    email = "jcubic@onet.pl"),
+             person("Michal", "Jakubczak", role = "ctb"),
+             person("Pawel", "Piatkowski", role = c("aut", "cre"),
+                    email = "pawel.piatkowski@posteo.net",
+                    comment = c(ORCID = "0000-0002-0822-5592")))
+Description: Adds interactive tooltip boxes to ggplots (standalone
+    or rendered in Shiny).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.4.2)
+Imports:
+    ggplot2,
+    rlang,
+    plyr,
+    jsonlite,
+    htmltools
+RoxygenNote: 6.1.1
+Suggests:
+    testthat,
+    shiny

@@ -1,0 +1,50 @@
+.ggtips-plot {
+  position: relative;
+}
+.ggtips-tooltip {
+  position: absolute;
+  float: left;
+  display: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.ggtips-tooltip ul {
+  background: var(--background, black);
+  color: var(--color, white);
+  list-style: none;
+  margin: 0;
+  padding: 5px;
+  line-height: 1.1em;
+  border-radius: 5px;
+}
+/* TODO: check if this works, then remove */
+/*
+.shiny-html-output.show-tooltip {
+  overflow: hidden;
+}
+*/
+.shiny-html-output.show-tooltip .ggtips-tooltip {
+  display: block;
+  white-space: pre;
+}
+.ggtips-tooltip::before, .ggtips-tooltip::after {
+  border: 5px solid var(--background, black);
+  width: 0;
+  position: absolute;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+.ggtips-tooltip:not(.right)::before {
+  content: "";
+  display: block;
+  border-left-color: transparent;
+  left: -10px;
+}
+.ggtips-tooltip.right::after {
+  content: "";
+  display: block;
+  border-right-color: transparent;
+  right: -10px;
+}
