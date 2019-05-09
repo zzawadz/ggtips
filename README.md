@@ -13,4 +13,4 @@ The main function - `renderWithTooltips()` - is a wrapper around Shiny's `render
     )
 ```
 
-See our demo application (type `ggtips::demo()`) for a more concrete example.
+See our demo application (type `ggtips::demo()`) for a more concrete example. (You can build a Dockerized version: `sudo docker build -t ggtips -f inst/Dockerfile`.)

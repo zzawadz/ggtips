@@ -105,9 +105,13 @@ renderWithTooltips <- function(plot,
 #' Launches a Shiny app demonstrating the capabilities of ggtips.
 #'
 #' @export
-demo <- function() {
+demo <- function(host = "0.0.0.0", port = 3838L) {
   if (!require("shiny")) {
     stop("Shiny is required to run the demo")
   }
-  shiny::runApp(appDir = system.file("example", package = "ggtips"))
+  shiny::runApp(
+    appDir = system.file("example", package = "ggtips"),
+    host = host,
+    port = port
+  )
 }
