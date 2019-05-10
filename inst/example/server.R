@@ -18,27 +18,23 @@ customContentFunction <- function(x) {
 }
 
 function(input, output) {
-
-    # Re-register plot renderer on every input change
-    output[["myPlot"]] <- renderWithTooltips(
-      plot = plotIris(x_aes = input[["x_aes"]], y_aes = input[["y_aes"]]),
-      varDict = {
-        # Retrieve aesthetic names and labels from input controls
-        x_aes <- input[["x_aes"]]
-        x_label <- names(irisVariables[irisVariables == x_aes])
-        y_aes <- input[["y_aes"]]
-        y_label <- names(irisVariables[irisVariables == y_aes])
-
-        # Create variable dictionary
-        # format: list(<variable> = <label>)
-        varDict <- structure(
-          list(x_label, y_label),
-          names = c(x_aes, y_aes)
-        )
-      },
-      callback = customContentFunction,
-      width = 8,
-      height = 5,
-      point.size = 20
-    )
+  output[["myPlot"]] <- renderWithTooltips(
+    plot = plotIris(x_aes = input[["x_aes"]], y_aes = input[["y_aes"]]),
+    varDict = {
+      # Retrieve aesthetic names and labels from input controls
+      x_aes <- input[["x_aes"]]
+      x_label <- names(irisVariables[irisVariables == x_aes])
+      y_aes <- input[["y_aes"]]
+      y_label <- names(irisVariables[irisVariables == y_aes])
+      # Create variable dictionary [format: list(<variable> = <label>)]
+      structure(
+        list(x_label, y_label),
+        names = c(x_aes, y_aes)
+      )
+    },
+    callback = customContentFunction,
+    width = 8,
+    height = 5,
+    point.size = 20
+  )
 }
