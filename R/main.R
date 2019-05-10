@@ -59,10 +59,11 @@ renderWithTooltips <- function(plot,
   if (!requireNamespace("shiny")) {
     stop("renderWithTooltips() requires Shiny")
   }
-  shiny::renderUI({
+
+  shiny::installExprFunction({
     outfile <- tempfile(fileext = ".svg")
     grob <- gridExtra::arrangeGrob(plot)
-    data <- saveAndGetTooltips(
+    data <- ggtips::saveAndGetTooltips(
       plot = plot,
       g = grob[[1]][[1]],
       callback = callback,
@@ -75,7 +76,7 @@ renderWithTooltips <- function(plot,
       limitsize = FALSE,
       ...
     )
-    svg <- readSvgAndRemoveTextLength(outfile)
+    svg <- ggtips:::readSvgAndRemoveTextLength(outfile)
     id <- as.numeric(Sys.time())*1000
     Encoding(svg) <- "UTF-8"
     data <- list(
@@ -91,13 +92,18 @@ renderWithTooltips <- function(plot,
     )
     shiny::tagList(
       shiny::HTML(svg),
-      getDependencies(),
+      ggtips:::getDependencies(),
       htmltools::tags$div(`data-id` = id, class = "ggtips-tooltip"),
       shiny::HTML(
         sprintf(script, id, jsonlite::toJSON(data, auto_unbox = TRUE))
       )
     )
-  })
+  }, name = "func", eval.env = parent.frame(), quoted = FALSE)
+
+  shiny::createRenderFunction(func, function(result, shinysession, name, ...) {
+    if (is.null(result) || length(result) == 0) return(NULL)
+    shiny:::processDeps(result, shinysession)
+  }, shiny::uiOutput, list())
 }
 
 #' Run a demo app for ggtips

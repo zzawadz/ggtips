@@ -12,7 +12,7 @@ To install ggtips, use devtools:
 
 ### Usage:
 
-The main function - `renderWithTooltips()` - is a wrapper around Shiny's `renderUI()`. To use it in your app, define an `uiOutput` element in the UI section (this will be the container for your plot), and substiture `renderPlot()` in your server logic with `renderWithTooltips()`, providing a list of variables you want to see in the tooltips:
+The main function - `renderWithTooltips()` - works similar to Shiny's `renderUI()`. To use it in your app, define an `uiOutput` element in the UI section (this will be the container for your plot), and substiture `renderPlot()` in your server logic with `renderWithTooltips()`, providing a list of variables you want to see in the tooltips:
 
 ```
     output[["myPlot"]] <- renderWithTooltips(
