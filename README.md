@@ -1,6 +1,6 @@
 ## ggtips - interactive tooltips for ggplots
 
-Our package provides a set of functions to easily enhance your ggplots with eye-pleasing tooltips, and render them in your Shiny apps.
+Our package provides a set of functions to enhance your ggplots with eye-pleasing tooltips easily, and render them in your Shiny apps.
 
 ### Installation
 
@@ -22,3 +22,22 @@ The main function - `renderWithTooltips()` - works similar to Shiny's `renderUI(
 ```
 
 See our demo application (type `ggtips::demo()`) for a more concrete example. (You can build a Dockerized version: `sudo docker build -t ggtips -f inst/Dockerfile .`)
+
+After building the docker image (which can take a while) use the command:
+
+```
+    docker run -p 3838:3838 ggtips
+```
+
+The docker image starts in interactive mode (which means you can use ctrl+c to stop it) and exposes the web browser at port 3838. 
+
+Depending on your Docker setup, the exposed application may be available under: 
+
+[http://localhost:3838](http://localhost:3838) 
+
+or may be exposed through the locally running *docker-machine*, which is the typical
+case with the Windows operating system that have no Hyper-V enabled. You can find more information about it on [Hyper-V on Windows](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/reference/hyper-v-requirements).
+
+If your Docker setup is using *docker-machine*, you can find it's IP using command `docker-machine ip`, then use the `http://{docker machine IP}:3838` address to connect to demo session. 
+
+See [Docker setup tutorial](https://docs.docker.com/get-started) to learn more about configuring Docker and [Docker Machine Documentation](https://docs.docker.com/machine/get-started/) to learn about *docker-machine* itself.
