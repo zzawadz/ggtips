@@ -2,6 +2,11 @@
 
 Our package provides a set of functions to enhance your ggplots with eye-pleasing tooltips easily, and render them in your Shiny apps.
 
+### Preview
+
+![plot with tooltips](inst/example/ggtips.png?raw=true)
+
+
 ### Installation
 
 To install ggtips, use devtools:
