@@ -7,6 +7,8 @@ Our package provides a set of functions to enhance your ggplots with eye-pleasin
 ![plot with tooltips](inst/example/ggtips.png?raw=true)
 
 
+[Demo shiny app](https://jcubic.shinyapps.io/ggtips/)
+
 ### Installation
 
 To install ggtips, use devtools:
@@ -46,3 +48,10 @@ case with the Windows operating system that have no Hyper-V enabled. You can fin
 If your Docker setup is using *docker-machine*, you can find it's IP using command `docker-machine ip`, then use the `http://{docker machine IP}:3838` address to connect to demo session. 
 
 See [Docker setup tutorial](https://docs.docker.com/get-started) to learn more about configuring Docker and [Docker Machine Documentation](https://docs.docker.com/machine/get-started/) to learn about *docker-machine* itself.
+
+
+## License
+
+Copyright 2019 Genentech, Inc.
+
+Released under Genentech Open License
