@@ -55,6 +55,7 @@ renderWithTooltips <- function(plot,
                                dpi = 72,
                                width = NA,
                                height = NA,
+                               customGrob = NULL,
                                ...) {
   if (!requireNamespace("shiny")) {
     stop("renderWithTooltips() requires Shiny")
