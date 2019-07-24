@@ -44,7 +44,7 @@
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
 #'
-getTooltips <- function(plot, varDict, plotScales, g, callback) {
+getTooltips <- function(plot, varDict, plotScales, g, callback, attributes) {
   gb <- ggplot2::ggplot_build(plot)
   tooltipData <- getTooltipData(
     plot,
@@ -54,7 +54,7 @@ getTooltips <- function(plot, varDict, plotScales, g, callback) {
     callback = callback
   )
   layoutNames <- assignLayoutNamesToPanels(g)
-
+  
   totalPlotSize <- getGrobSize(g)
   plotWidth <- totalPlotSize$width
   plotHeight <- totalPlotSize$height
@@ -108,7 +108,7 @@ getTooltips <- function(plot, varDict, plotScales, g, callback) {
     SIMPLIFY = FALSE
   )
   # Group tooltip tables by geometries
-  sapply(
+  res <- sapply(
     uniqueGeomNames,
     function(geomName) {
       tooltips[which(geomNames == geomName)]
@@ -116,6 +116,13 @@ getTooltips <- function(plot, varDict, plotScales, g, callback) {
     simplify = FALSE,
     USE.NAMES = TRUE
   )
+  
+  if (attributes) {
+    attr(res, "colWidths") <- colWidths
+    attr(res, "rowHeights") <- rowHeights
+  }
+  
+  res
 }
 
 #' Save ggplot and get tooltips
@@ -142,7 +149,7 @@ saveAndGetTooltips <- ggplot2::ggsave
 
 formals(saveAndGetTooltips) <- c(
   formals(saveAndGetTooltips),
-  alist(varDict = , plotScales = , g = , callback = NULL)
+  alist(varDict = , plotScales = , g = , callback = NULL, attributes = TRUE)
 )
 body(saveAndGetTooltips)[[length(body(saveAndGetTooltips))]] <- quote(
   ggtips:::getTooltips(
@@ -150,6 +157,7 @@ body(saveAndGetTooltips)[[length(body(saveAndGetTooltips))]] <- quote(
     varDict = varDict,
     plotScales = plotScales,
     g = g,
-    callback = callback
+    callback = callback,
+    attributes = attributes
   )
 )

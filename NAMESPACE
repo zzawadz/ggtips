@@ -3,6 +3,8 @@
 export(demo)
 export(getLayerAesthetics)
 export(getLayerGeom)
+export(getSvgAndTooltipdata)
+export(htmlWithGivenTooltips)
 export(renderWithTooltips)
 export(saveAndGetTooltips)
 export(setFocusTo)

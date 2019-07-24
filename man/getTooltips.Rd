@@ -4,7 +4,7 @@
 \alias{getTooltips}
 \title{Get tooltips}
 \usage{
-getTooltips(plot, varDict, plotScales, g, callback)
+getTooltips(plot, varDict, plotScales, g, callback, attributes)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}

@@ -4,7 +4,7 @@
 \alias{demo}
 \title{Run a demo app for ggtips}
 \usage{
-demo()
+demo(host = "0.0.0.0", port = 3838L)
 }
 \description{
 Launches a Shiny app demonstrating the capabilities of ggtips.

@@ -7,7 +7,7 @@
 saveAndGetTooltips(filename, plot = last_plot(), device = NULL,
   path = NULL, scale = 1, width = NA, height = NA,
   units = c("in", "cm", "mm"), dpi = 300, limitsize = TRUE, ...,
-  varDict, plotScales, g, callback = NULL)
+  varDict, plotScales, g, callback = NULL, attributes = TRUE)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}
