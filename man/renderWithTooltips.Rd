@@ -32,6 +32,9 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 
 \item{height}{Plot height (in inches; optional).}
 
+\item{customGrob}{optional grob object. It allows to pass original plot with 
+grob manipulations.}
+
 \item{...}{Additional parameters passed to \link{ggsave}.}
 }
 \description{

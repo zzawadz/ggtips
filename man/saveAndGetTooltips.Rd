@@ -26,13 +26,13 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 
 \item{g}{A gtable object compiled from the plot (see \link{arrangeGrob}).}
 
+\item{ggPlotObj}{optional, used if plot is a customGrob.}
+
 \item{callback}{Callback function for adding custom content to the tooltips
 (see the example app).}
 
 \item{addAttributes}{Logical parameter determinig whether extra geom 
 attributes should be add to tooltip object.}
-
-\item{ggplotObj}{optional, used if plot is a customGrob.}
 }
 \value{
 A list.
