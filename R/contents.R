@@ -177,16 +177,29 @@ getNamesFromVarDict <- function(df, varDict, mapping) {
   }
 }
 
+#' As trans
+#' 
+#' Gets a proper trans object from scales package. Original function 
+#' scales::as.trans() is not working properly when scales are in Imports
+#' 
+#' @param x character string, the scale name
+#' 
+#' @return scale object
+as_trans <- function(x){
+  trans <- get(paste0(x, "_trans"), asNamespace("scales"))
+  trans()
+}
+
 #' Untransform scales
 #'
 untransformScales <- function(data, plotScales) {
   lapply(data, function(df) {
     if (!is.null(plotScales$x) && "x" %in% names(df)) {
-      tr <- scales::as.trans(plotScales$x)
+      tr <- as_trans(plotScales$x)
       df[["x"]] <- tr$inverse(df[["x"]])
     }
     if (!is.null(plotScales$y) && "y" %in% names(df)) {
-      tr <- scales::as.trans(plotScales$y)
+      tr <- as_trans(plotScales$y)
       df[["y"]] <- tr$inverse(df[["y"]])
     }
     df
