@@ -143,6 +143,8 @@ htmlWithGivenTooltips <- function(svg,
 #' @param dpi DPI value (optional).
 #' @param width Plot width (in inches; optional).
 #' @param height Plot height (in inches; optional).
+#' @param customGrob optional grob object. It allows to pass original plot with 
+#' grob manipulations.
 #' @param ... Additional parameters passed to \link{ggsave}.
 #'
 #' @note Non-numeric variables are only back-transformed to their original

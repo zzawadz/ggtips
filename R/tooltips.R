@@ -137,8 +137,8 @@ getTooltips <- function(plot,
 #' Wrapper for \link{ggsave}; after saving a plot, returns an HTML-formatted
 #' list of tooltip data (see \link{getTooltips}).
 #'
-#' @param plot Ready grob object created from ggPlotObj or passed as a custom 
-#' grob.
+#' @param plot ggplot object or customGrob, see "getSvgAndTooltipdata" for 
+#' more details.
 #' @param g A gtable object compiled from the plot (see \link{arrangeGrob}).
 #' @param varDict Variable dictionary in the following format:
 #' \code{list(<variable> = <label>, ...)},
@@ -148,7 +148,7 @@ getTooltips <- function(plot,
 #' @param plotScales A list with two fields: x and y. Defines axis
 #' scales (transformations) for the purpose of displaying original
 #' values in tooltips. If NULL (default), values are displayed "as is".
-#' @param ggPlotObj A \link{ggplot} object which is source of tooltip data.
+#' @param ggPlotObj optional, used if plot is a customGrob.
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
 #' @param addAttributes Logical parameter determinig whether extra geom 

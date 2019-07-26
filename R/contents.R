@@ -177,8 +177,14 @@ getNamesFromVarDict <- function(df, varDict, mapping) {
   }
 }
 
-#' as_trans wrapper
-#'
+#' As trans
+#' 
+#' Gets a proper trans object from scales package. Original function 
+#' scales::as.trans() is not working properly when scales are in Imports
+#' 
+#' @param x character string, the scale name
+#' 
+#' @return scale object
 as_trans <- function(x){
   trans <- get(paste0(x, "_trans"), asNamespace("scales"))
   trans()

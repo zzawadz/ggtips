@@ -11,8 +11,8 @@ saveAndGetTooltips(filename, plot = last_plot(), device = NULL,
   addAttributes = FALSE)
 }
 \arguments{
-\item{plot}{Ready grob object created from ggPlotObj or passed as a custom 
-grob.}
+\item{plot}{ggplot object or customGrob, see "getSvgAndTooltipdata" for 
+more details.}
 
 \item{varDict}{Variable dictionary in the following format:
 \code{list(<variable> = <label>, ...)},
@@ -26,13 +26,13 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 
 \item{g}{A gtable object compiled from the plot (see \link{arrangeGrob}).}
 
-\item{ggPlotObj}{A \link{ggplot} object which is source of tooltip data.}
-
 \item{callback}{Callback function for adding custom content to the tooltips
 (see the example app).}
 
 \item{addAttributes}{Logical parameter determinig whether extra geom 
 attributes should be add to tooltip object.}
+
+\item{ggplotObj}{optional, used if plot is a customGrob.}
 }
 \value{
 A list.

@@ -2,10 +2,17 @@
 % Please edit documentation in R/contents.R
 \name{as_trans}
 \alias{as_trans}
-\title{as_trans wrapper}
+\title{As trans}
 \usage{
 as_trans(x)
 }
+\arguments{
+\item{x}{character string, the scale name}
+}
+\value{
+scale object
+}
 \description{
-as_trans wrapper
+Gets a proper trans object from scales package. Original function 
+scales::as.trans() is not working properly when scales are in Imports
 }
