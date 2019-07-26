@@ -63,15 +63,15 @@ renderWithTooltips <- function(plot,
   
   shiny::installExprFunction({
     res <- getSvgAndTooltipdata(
-      plot, 
-      varDict, 
-      plotScales, 
-      callback, 
-      point.size, 
-      dpi, 
-      width, 
-      height, 
-      customGrob,
+      plot = plot, 
+      varDict = varDict, 
+      plotScales = plotScales, 
+      callback = callback, 
+      point.size = point.size, 
+      dpi = dpi, 
+      width = width, 
+      height = height, 
+      customGrob = customGrob,
       ...
     )
     htmlWithGivenTooltips(
@@ -162,7 +162,8 @@ getSvgAndTooltipdata <- function(plot,
   outfile <- tempfile(fileext = ".svg")
   grob <- gridExtra::arrangeGrob(`if`(is.null(customGrob), plot, customGrob))
   data <- saveAndGetTooltips(
-    plot = plot,
+    plot = grob,
+    ggPlotObj = plot,
     g = grob[[1]][[1]],
     callback = callback,
     filename = outfile,

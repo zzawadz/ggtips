@@ -5,7 +5,8 @@
 \title{Render plot with tooltips}
 \usage{
 renderWithTooltips(plot, varDict, plotScales = NULL, callback = NULL,
-  point.size = 10, dpi = 72, width = NA, height = NA, ...)
+  point.size = 10, dpi = 72, width = NA, height = NA,
+  customGrob = NULL, ...)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}

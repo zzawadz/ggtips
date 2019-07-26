@@ -26,7 +26,7 @@ test_that("getTooltips()", {
     plotScales = NULL,
     g = gt,
     callback = NULL,
-    attributes = TRUE
+    addAttributes = TRUE
   )
   expect_is(tooltips, "list")
   expect_length(tooltips, 1L)

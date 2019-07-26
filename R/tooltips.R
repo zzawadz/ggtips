@@ -43,8 +43,15 @@
 #' values in tooltips. If NULL (default), values are displayed "as is".
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
+#' @param addAttributes Logical parameter determinig whether extra geom 
+#' attributes should be add to tooltip object.
 #'
-getTooltips <- function(plot, varDict, plotScales, g, callback, attributes) {
+getTooltips <- function(plot, 
+                        varDict, 
+                        plotScales, 
+                        g, 
+                        callback, 
+                        addAttributes = FALSE) {
   gb <- ggplot2::ggplot_build(plot)
   tooltipData <- getTooltipData(
     plot,
@@ -117,7 +124,7 @@ getTooltips <- function(plot, varDict, plotScales, g, callback, attributes) {
     USE.NAMES = TRUE
   )
   
-  if (attributes) {
+  if (addAttributes) {
     attr(res, "colWidths") <- colWidths
     attr(res, "rowHeights") <- rowHeights
   }
@@ -130,7 +137,8 @@ getTooltips <- function(plot, varDict, plotScales, g, callback, attributes) {
 #' Wrapper for \link{ggsave}; after saving a plot, returns an HTML-formatted
 #' list of tooltip data (see \link{getTooltips}).
 #'
-#' @param plot A \link{ggplot} object.
+#' @param plot Ready grob object created from ggPlotObj or passed as a custom 
+#' grob.
 #' @param g A gtable object compiled from the plot (see \link{arrangeGrob}).
 #' @param varDict Variable dictionary in the following format:
 #' \code{list(<variable> = <label>, ...)},
@@ -140,8 +148,11 @@ getTooltips <- function(plot, varDict, plotScales, g, callback, attributes) {
 #' @param plotScales A list with two fields: x and y. Defines axis
 #' scales (transformations) for the purpose of displaying original
 #' values in tooltips. If NULL (default), values are displayed "as is".
+#' @param ggPlotObj A \link{ggplot} object which is source of tooltip data.
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
+#' @param addAttributes Logical parameter determinig whether extra geom 
+#' attributes should be add to tooltip object.
 #'
 #' @return A list.
 #' @export
@@ -149,15 +160,22 @@ saveAndGetTooltips <- ggplot2::ggsave
 
 formals(saveAndGetTooltips) <- c(
   formals(saveAndGetTooltips),
-  alist(varDict = , plotScales = , g = , callback = NULL, attributes = TRUE)
+  alist(
+    varDict = , 
+    plotScales = , 
+    g = , 
+    ggPlotObj = NULL, 
+    callback = NULL, 
+    addAttributes = FALSE
+  )
 )
 body(saveAndGetTooltips)[[length(body(saveAndGetTooltips))]] <- quote(
   ggtips:::getTooltips(
-    plot = plot,
+    plot = `if`(is.null(ggPlotObj), plot, ggPlotObj),
     varDict = varDict,
     plotScales = plotScales,
     g = g,
     callback = callback,
-    attributes = attributes
+    addAttributes = addAttributes
   )
 )
