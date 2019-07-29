@@ -64,7 +64,7 @@ renderWithTooltips <- function(plot,
   }
   
   shiny::installExprFunction({
-    res <- getSvgAndTooltipdata(
+    res <- ggtips::getSvgAndTooltipdata(
       plot = plot, 
       varDict = varDict, 
       plotScales = plotScales, 
@@ -76,7 +76,7 @@ renderWithTooltips <- function(plot,
       customGrob = customGrob,
       ...
     )
-    htmlWithGivenTooltips(
+    ggtips::htmlWithGivenTooltips(
       svg = res$svg, 
       data = res$data, 
       height = height, 
