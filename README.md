@@ -1,5 +1,7 @@
 ## ggtips - interactive tooltips for ggplots
 
+![Build](https://travis-ci.org/Roche/ggtips.svg?branch=master)
+
 Our package provides a set of functions to enhance your ggplots with eye-pleasing tooltips easily, and render them in your Shiny apps.
 
 ### Preview
