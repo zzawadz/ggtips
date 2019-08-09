@@ -3,7 +3,8 @@ library(ggplot2)
 # Convenience function for plotting the Iris dataset
 plotIris <- function(x_aes, y_aes) {
   ggplot(data = iris, mapping = aes_string(x = x_aes, y = y_aes)) +
-    geom_point(mapping = aes(colour = Species))
+    geom_point(mapping = aes(colour = Species)) +
+    theme(legend.position = "bottom")
 }
 
 customContentFunction <- function(x) {
