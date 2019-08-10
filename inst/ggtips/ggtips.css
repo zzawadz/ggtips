@@ -30,6 +30,7 @@
 .ggtips-tooltip::before, .ggtips-tooltip::after {
   border: 5px solid var(--background, black);
   width: 0;
+  height: 0;
   position: absolute;
   border-top-color: transparent;
   border-bottom-color: transparent;
