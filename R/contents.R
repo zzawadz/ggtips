@@ -114,7 +114,13 @@ unmapAes <- function(data, mapping, plot) {
   # If it's a trellis, order the input data frame
   # based on the actual order of panels
   if (!is.null(plot$facet$params$facets)) {
-    trellisVar <- as.character(plot$facet$params$facets[[1]])
+    facet <- plot$facet$params$facets[[1]]
+    # this is to keep compatibility with both ggplot2 2.x and 3.x
+    trellisVar <- if (is(facet, "quosure")) {
+      rlang::as_name(facet) # ggplot2 3.x
+    } else {
+      as.character(facet) # ggplot2 2.x
+    }
     groups <- plotData[[trellisVar]]
     groupLevels <- levels(groups)
     plotData <- plotData[order(match(groups, groupLevels)), ]
