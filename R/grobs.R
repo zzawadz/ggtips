@@ -41,7 +41,7 @@ assignLayoutNamesToPanels <- function(gtree) {
   panelNums <- as.integer(gsub("^panel-([0-9]+).*$", "\\1", grobNames))
   panels <- c()
   panels[panelNums] <- layoutNames
-  panels
+  panels[!is.na(panels)]
 }
 
 #' Name to grob
