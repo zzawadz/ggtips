@@ -32,7 +32,20 @@ The main function - `renderWithTooltips()` - works similar to Shiny's `renderUI(
 
 `renderWithTooltips` function accepts also optional `customGrob` parameter. It allows to pass modified grob object and as a result output tooltips coordinates will fits its geometries. This is useful if you want to add any extra geometry to your plot, e.g. bar with information or warning.
 
-See our demo application (type `ggtips::demo()`) for a more concrete example. (You can build a Dockerized version: `sudo docker build -t ggtips -f inst/Dockerfile .`)
+### Options
+
+* plot - ggplot object
+* varDict - list of data to render on the tooltip that will be extracted from ggplot (keys are read data names and values are labels on tooltips)
+* customGrob - original grob object that can have grob manipulation
+* callback - function can can be used to put additional data into tooltip, it should return strign (see example)
+* width/height - number
+* point.size - size of the points
+
+See our demo application (type `ggtips::demo()`) for example usage.
+
+### Docker demo
+
+Optionally you can also build a Dockerized version of the demo: `sudo docker build -t ggtips -f inst/Dockerfile .`
 
 After building the docker image (which can take a while) use the command:
 
