@@ -23,7 +23,7 @@
   overflow: hidden;
 }
 */
-.shiny-html-output.show-tooltip .ggtips-tooltip {
+.shiny-html-output.ggtips-show-tooltip .ggtips-tooltip {
   display: block;
   white-space: pre;
 }
@@ -36,13 +36,13 @@
   top: 50%;
   transform: translate(0, -50%);
 }
-.ggtips-tooltip:not(.right)::before {
+.ggtips-tooltip:not(.ggtips-tooltip-right)::before {
   content: "";
   display: block;
   border-left-color: transparent;
   left: -10px;
 }
-.ggtips-tooltip.right::after {
+.ggtips-tooltip.ggtips-tooltip-right::after {
   content: "";
   display: block;
   border-right-color: transparent;

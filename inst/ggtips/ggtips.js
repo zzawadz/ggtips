@@ -100,7 +100,7 @@ if (typeof jQuery === 'undefined') {
                     }
 
                     var color = contrastColor(background);
-                    container.addClass('show-tooltip');
+                    container.addClass('ggtips-show-tooltip');
                     container[0].style.setProperty('--color', color);
                     container[0].style.setProperty('--background', background);
                     tooltip.html(p.tooltip);
@@ -111,10 +111,10 @@ if (typeof jQuery === 'undefined') {
                     var left = box.left + box.width + 5 - offset.left;
                     var rAlign = left + tooltipWidth + 5 > container.width();
                     if (rAlign) {
-                        left = box.left - box.width - offset.left -
-                            tooltipWidth;
+                        // 5 - triangle width
+                        left = box.left - 5 - offset.left - tooltipWidth;
                     }
-                    tooltip.toggleClass('right', rAlign);
+                    tooltip.toggleClass('ggtips-tooltip-right', rAlign);
                     tooltip.css({
                         left: left,
                         top: top
