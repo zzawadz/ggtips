@@ -37,7 +37,7 @@ The main function - `renderWithTooltips()` - works similar to Shiny's `renderUI(
 * plot - ggplot object
 * varDict - list of data to render on the tooltip that will be extracted from ggplot (keys are read data names and values are labels on tooltips)
 * customGrob - original grob object that can have grob manipulation
-* callback - function can can be used to put additional data into tooltip, it should return strign (see example)
+* callback - function that can be used, to put additional data into tooltip, it should return string
 * width/height - number
 * point.size - size of the points
 
