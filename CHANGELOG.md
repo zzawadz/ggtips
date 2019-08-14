@@ -1,3 +1,7 @@
+## 0.2.1
+### Bugs
+* fix hiding tooltip when hover out the point
+
 ## 0.2.0
 ### Features
 * customGrob option
