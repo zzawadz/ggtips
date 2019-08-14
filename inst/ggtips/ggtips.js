@@ -121,7 +121,7 @@ if (typeof jQuery === 'undefined') {
                     });
                 }
             }, function(e) {
-                container.removeClass('show-tooltip');
+                container.removeClass('ggtips-show-tooltip');
             });
         });
     };
