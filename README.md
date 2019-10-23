@@ -64,7 +64,7 @@ output[["myPlot"]] <- renderUI({
 })
 ```
 
-## new API aded in version <= 0.3.0
+## new API added in version 0.3.0
 
 ```R
 output[["myPlot"]] <- renderUI({
