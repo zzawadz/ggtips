@@ -68,6 +68,10 @@ test_that("getGrobSize()", {
 test_that("isNullUnit()", {
   expect_false(ggtips:::isNullUnit(unit(1, "npc")))
   expect_true(ggtips:::isNullUnit(unit(1, "null")))
+  expect_true(ggtips:::isNullUnit(grid:::unit.list(unit(1, "null"))))
+  expect_false(ggtips:::isNullUnit(grid:::unit.list(unit(1, "mm"))))
+  expect_false(ggtips:::isNullUnit(grid:::unit.list(grid::unit.c(unit(1, "null"), unit(1, "mm")))))
+  expect_false(ggtips:::isNullUnit(grid:::unit.list(grid::unit.c(unit(1, "null"), unit(1, "null")))))
 })
 
 test_that("columns and rows", {
