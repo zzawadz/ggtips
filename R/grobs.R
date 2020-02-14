@@ -177,6 +177,9 @@ getGrobSize <- function(gtree, layoutName = NULL, unit = "mm") {
 #'
 isNullUnit <- function(x) {
   if (is(x, "unit")) {
+    if (is(x, "unit.list") && length(x) == 1){
+      x <- x[[1]]
+    }
     unit <- attr(x, "unit")
     !is.null(unit) && unit == "null"
   } else {
