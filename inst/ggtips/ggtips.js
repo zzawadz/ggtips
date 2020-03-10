@@ -58,7 +58,8 @@ if (typeof jQuery === 'undefined') {
                             'rect:size(' + settings.size + ')',
                             'line:size(' + settings.size + ')' + css,
                             'line:size(' + settings.size + ', 0)' + css,
-                            'polyline:diamond:size(' + settings.size + ')'
+                            'polyline:diamond:size(' + settings.size + ')',
+                            'polygon:size(' + settings.size + ')'
                             ].join(', ');
 
             container.proximity('unbind').proximity(selector, {
@@ -167,7 +168,7 @@ if (typeof jQuery === 'undefined') {
                 point.coordX /= v.width;
                 point.coordY /= v.height;
                 return point;
-            } else if ($e.is('rect,line,:diamond')) {
+            } else if ($e.is('rect,line,:diamond,polygon')) {
                 var box = $e[0].getBBox();
                 cx = box.x + (box.width / 2);
                 cy = box.y + (box.height / 2);
