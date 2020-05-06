@@ -7,6 +7,10 @@
 * add missing height parameter
 * enable polygon points for tooltips
 
+## 0.3.1
+### Bugs
+* argument height
+
 ## 0.3.0
 ### Features
 * improved API `ggtips::plotWithTooltips`
