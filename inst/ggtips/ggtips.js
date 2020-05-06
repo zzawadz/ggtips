@@ -30,7 +30,7 @@ if (typeof jQuery === 'undefined') {
 }
 
 (function($) {
-    
+
     // -------------------------------------------------------------------------
     // :: GGPlot Tooltips
     // -------------------------------------------------------------------------
@@ -51,6 +51,7 @@ if (typeof jQuery === 'undefined') {
             }
             var $container = tooltip.closest('.shiny-html-output')
                 .addClass('ggtips-plot');
+
             if (!$container.length) {
                 warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
                      'class found');
