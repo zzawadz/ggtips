@@ -45,12 +45,17 @@ if (typeof jQuery === 'undefined') {
             var self = $(this);
             var tooltip = self.find('.ggtips-tooltip');
             if (!tooltip.length) {
-                warn('Invalid Container no element with ggtips-tooltip ' +
+                warn('GGTips: Invalid Container no element with ggtips-tooltip ' +
                      'class found');
                 return;
             }
             var $container = tooltip.closest('.shiny-html-output')
                 .addClass('ggtips-plot');
+            if (!$container.length) {
+                warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
+                     'class found');
+                return;
+            }
             var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
