@@ -45,12 +45,18 @@ if (typeof jQuery === 'undefined') {
             var self = $(this);
             var tooltip = self.find('.ggtips-tooltip');
             if (!tooltip.length) {
-                warn('Invalid Container no element with ggtips-tooltip ' +
+                warn('GGTips: Invalid Container no element with ggtips-tooltip ' +
                      'class found');
                 return;
             }
-            var container = tooltip.closest('.shiny-html-output')
-                                   .addClass('ggtips-plot');
+            var $container = tooltip.closest('.shiny-html-output')
+                .addClass('ggtips-plot');
+            if (!$container.length) {
+                warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
+                     'class found');
+                return;
+            }
+            var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
             var selector = ['circle:not(:css(fill:none))',
@@ -62,7 +68,7 @@ if (typeof jQuery === 'undefined') {
                             'polygon:size(' + settings.size + ')'
                             ].join(', ');
 
-            container.proximity('unbind').proximity(selector, {
+            $container.proximity('unbind').proximity(selector, {
                 max: settings.size * 2
             }, function(e) {
                 var $e = $(e.target);
@@ -92,7 +98,7 @@ if (typeof jQuery === 'undefined') {
 
                 p = findData(settings.data.points, point);
                 if (p) {
-                    var offset = container.offset();
+                    var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
                     var background = $e.css('fill');
                     //default black for black & white color scheme
@@ -101,16 +107,16 @@ if (typeof jQuery === 'undefined') {
                     }
 
                     var color = contrastColor(background);
-                    container.addClass('ggtips-show-tooltip');
-                    container[0].style.setProperty('--color', color);
-                    container[0].style.setProperty('--background', background);
+                    $container.addClass('ggtips-show-tooltip');
+                    container.style.setProperty('--color', color);
+                    container.style.setProperty('--background', background);
                     tooltip.html(p.tooltip);
                     var top = box.top - (tooltip.height() / 2) +
                         (box.height / 2) - offset.top;
                     var tooltipWidth = tooltip.prop('clientWidth');
                     // 5px to compensate for ::before triangle
                     var left = box.left + box.width + 5 - offset.left;
-                    var rAlign = left + tooltipWidth + 5 > container.width();
+                    var rAlign = left + tooltipWidth + 5 > $container.width();
                     if (rAlign) {
                         // 5 - triangle width
                         left = box.left - 5 - offset.left - tooltipWidth;
@@ -122,7 +128,7 @@ if (typeof jQuery === 'undefined') {
                     });
                 }
             }, function(e) {
-                container.removeClass('ggtips-show-tooltip');
+                $container.removeClass('ggtips-show-tooltip');
             });
         });
     };
