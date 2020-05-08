@@ -182,10 +182,11 @@ isNullUnit <- function(x) {
       sapply(x, isNullUnit)
     } else {
       # single unit object
-      unit <- attr(x, "unit")
-      if (is.numeric(unit)){
+      unit <- if (is(x, "unit_v2")){
         # grid 4.x
-        unit <- grid::unitType(x)
+        grid::unitType(x)
+      } else {
+        attr(x, "unit")
       }
       unit == "null"
     }
