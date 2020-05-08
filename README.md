@@ -123,6 +123,14 @@ about configuring Docker and
 [Docker Machine Documentation](https://docs.docker.com/machine/get-started/)
 to learn about *docker-machine* itself.
 
+## Contributors
+<!-- CONTRIBUTORS-START -->
+* [Paweł Piątkowski](https://github.com/cosi1)
+* [Jakub T. Jankiewicz](https://github.com/jcubic)
+* [Marcin Kamianowski](https://github.com/marcin-kam)
+* [Michał Jakubczak](https://github.com/mjakubczak)
+* Michal Bartczak
+<!-- CONTRIBUTORS-END -->
 
 ## License
 
