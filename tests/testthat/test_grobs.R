@@ -65,13 +65,39 @@ test_that("getGrobSize()", {
   expect_error(ggtips:::getGrobSize(gt, "i_dont_exist"))
 })
 
+unitList <- function (unit) {
+  # function copied from grid 3.x; it has been removed in grid 4.x
+  # only for test purposes, i.e. back compatibility with grid 3.x
+  if (inherits(unit, "unit.list")) 
+    unit
+  else 
+    structure(
+      class = c("unit.list", "unit"), 
+      lapply(seq_along(unit), function(i) unit[i])
+    )
+}
+
 test_that("isNullUnit()", {
   expect_false(ggtips:::isNullUnit(unit(1, "npc")))
   expect_true(ggtips:::isNullUnit(unit(1, "null")))
-  expect_true(ggtips:::isNullUnit(grid:::unit.list(unit(1, "null"))))
-  expect_false(ggtips:::isNullUnit(grid:::unit.list(unit(1, "mm"))))
-  expect_false(ggtips:::isNullUnit(grid:::unit.list(grid::unit.c(unit(1, "null"), unit(1, "mm")))))
-  expect_false(ggtips:::isNullUnit(grid:::unit.list(grid::unit.c(unit(1, "null"), unit(1, "null")))))
+  expect_true(ggtips:::isNullUnit(unitList(unit(1, "null"))))
+  expect_false(ggtips:::isNullUnit(unitList(unit(1, "mm"))))
+  expect_equal(
+    ggtips:::isNullUnit(unitList(grid::unit.c(unit(1, "null"), unit(1, "mm")))),
+    c(TRUE, FALSE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(grid::unit.c(unit(1, "null"), unit(1, "mm"))),
+    c(TRUE, FALSE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(unitList(grid::unit.c(unit(1, "null"), unit(1, "null")))),
+    c(TRUE, TRUE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(grid::unit.c(unit(1, "null"), unit(1, "null"))),
+    c(TRUE, TRUE)
+  )
 })
 
 test_that("columns and rows", {
