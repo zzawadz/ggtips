@@ -1,3 +1,20 @@
+## 0.3.3
+### Bugs
+* fix tooltip offset with scrollbar on content
+
+## 0.3.2
+### Bugs
+* add missing height parameter
+* enable polygon points for tooltips
+
+## 0.3.1
+### Bugs
+* argument height
+
+## 0.3.0
+### Features
+* improved API `ggtips::plotWithTooltips`
+
 ## 0.2.1
 ### Bugs
 * fix hiding tooltip when hover out the point

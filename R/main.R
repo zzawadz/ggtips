@@ -214,6 +214,7 @@ plotWithTooltips <- function(plot,
                              point.size = 10,
                              dpi = 72,
                              width = NA,
+                             height = NA,
                              customGrob = NULL,
                              ...) {
   res <- ggtips::getSvgAndTooltipdata(

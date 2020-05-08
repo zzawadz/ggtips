@@ -126,6 +126,6 @@ to learn about *docker-machine* itself.
 
 ## License
 
-Copyright 2019 Genentech, Inc.
+Copyright 2019-2020 Genentech, Inc.
 
 Released under Genentech Open License
