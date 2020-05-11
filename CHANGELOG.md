@@ -1,10 +1,7 @@
-## 0.3.3
+## 0.3.2
 ### Bugs
 * fix tooltip offset with scrollbar on content
 * fix issue on Firefox [#36](https://github.com/Roche/ggtips/issues/36)
-
-## 0.3.2
-### Bugs
 * add missing height parameter
 * enable polygon points for tooltips
 
