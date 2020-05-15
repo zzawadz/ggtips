@@ -1,3 +1,6 @@
+## 0.3.3
+* Updated MIT license
+
 ## 0.3.2
 ### Bugs
 * fix tooltip offset with scrollbar on content

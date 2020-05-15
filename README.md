@@ -131,9 +131,3 @@ to learn about *docker-machine* itself.
 * [Michał Jakubczak](https://github.com/mjakubczak)
 * Michal Bartczak
 <!-- CONTRIBUTORS-END -->
-
-## License
-
-Copyright 2019-2020 Genentech, Inc.
-
-Released under Genentech Open License
