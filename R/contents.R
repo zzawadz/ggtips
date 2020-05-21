@@ -270,7 +270,7 @@ removeRowsWithNA <- function(data, mapping) {
   mapply(
     FUN = function(df, map){
       # NAs transformed to characters in roundValues
-      dplyr::filter_at(df, dplyr::vars(!!map$x, !!map$y), ~ . != "NA") 
+      df[df[[map$x]] != "NA" & df[[map$y]] != "NA", ]
     },
     data,
     mapping,
