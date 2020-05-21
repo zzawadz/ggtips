@@ -264,6 +264,20 @@ roundValues <- function(data) {
   })
 }
 
+#' Remove rows with NA coordinates
+#' 
+removeRowsWithNA <- function(data, mapping) {
+  mapply(
+    FUN = function(df, map){
+      # NAs transformed to characters in roundValues
+      df[df[[map$x]] != "NA" & df[[map$y]] != "NA", ]
+    },
+    data,
+    mapping,
+    SIMPLIFY = FALSE
+  )
+}
+
 #'  Get data for tooltip contents
 #'
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
@@ -273,6 +287,7 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
+  data <- removeRowsWithNA(data, mapping) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 
