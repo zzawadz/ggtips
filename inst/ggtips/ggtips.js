@@ -30,7 +30,7 @@ if (typeof jQuery === 'undefined') {
 }
 
 (function($) {
-    
+
     // -------------------------------------------------------------------------
     // :: GGPlot Tooltips
     // -------------------------------------------------------------------------
@@ -51,6 +51,7 @@ if (typeof jQuery === 'undefined') {
             }
             var $container = tooltip.closest('.shiny-html-output')
                 .addClass('ggtips-plot');
+
             if (!$container.length) {
                 warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
                      'class found');
@@ -416,6 +417,9 @@ if (typeof jQuery === 'undefined') {
             element = $(element);
             var spec = meta[3].split(/\s*,\s*/).map(Number);
             var rect = element[0].getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) {
+                return false;
+            }
             if (spec.length === 1) {
                 return rect.width < spec[0] && rect.height < spec[0];
             } else {
