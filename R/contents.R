@@ -279,8 +279,12 @@ removeRowsWithNA <- function(data, mapping, layers) {
         if (x %in% names(map)) map[[x]] else x
       })
       
-      reqData <- df[reqAes]
-      df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
+      if (length(reqAes) > 0) {
+        reqData <- df[reqAes]
+        df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
+      } else {
+        df
+      }
     },
     data,
     mapping,
