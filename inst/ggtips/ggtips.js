@@ -85,14 +85,19 @@ if (typeof jQuery === 'undefined') {
                     var root = $e.closest('svg');
                     var rect = root.find('[id^="' + clip + '"]').find('rect');
                     if (rect.length) {
-                        p = $e[0].getBBox();
-                        box = rect[0].getBBox();
-                        var margin = 2; // 2px
-                        if (p.x > box.x + box.width - margin ||
-                            p.x < box.x + margin ||
-                            p.y > box.y + box.height - margin ||
-                            p.y < box.y + margin) {
-                            return;
+                        var clientRect = rect[0].getBoundingClientRect();
+                        // Firefox has some issues with getting non-zero rect dimensions
+                        if (clientRect.width > 0 && clientRect.height > 0) {
+                           p = $e[0].getBBox();
+                           box = rect[0].getBBox();
+                           console.log(box);
+                           var margin = 2; // 2px
+                           if (p.x > box.x + box.width - margin ||
+                              p.x < box.x + margin ||
+                              p.y > box.y + box.height - margin ||
+                              p.y < box.y + margin) {
+                              return;
+                           }
                         }
                     }
                 }
