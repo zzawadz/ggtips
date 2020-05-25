@@ -29,7 +29,7 @@ missingDataPlot <- prepareTestPlot(df)
 test_that("layers", {
   aesth <- ggtips:::getLayerAesthetics(fullDataPlot$testPlot)
   expect_gt(length(aesth), 0)
-  expect_equal(aesth[[1]], list(x = "Sepal.Width", y = "Sepal.Length"))
+  expect_equal(aesth[[1]], list(x = "Sepal.Width", y = "Sepal.Length", colour = "Petal.Length"))
   
   expect_equal(ggtips:::getLayerGeom(fullDataPlot$testPlot$layers[[1]]), "points")
 })

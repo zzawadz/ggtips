@@ -55,8 +55,13 @@ getLayerAesthetics <- function(plot) {
     layerMapping <- if (layer$inherit.aes) {
       plotMapping
     } else {
-      layer$mapping
+      ggplot2::aes()
     }
+    
+    if (length(layer$mapping) > 0) {
+      layerMapping[names(layer$mapping)] <- layer$mapping
+    }
+    
     lapply(layerMapping, parseMapping)
   })
 }
@@ -164,7 +169,7 @@ getNamesFromVarDict <- function(df, varDict, mapping) {
     df[[".custom"]]
   }
   validNames <- intersect(names(varDict), dfNames)
-  if (length(validNames) == 0) {
+  if (length(validNames) == 0 && is.null(customColumn)) {
     return(NULL)
   }
   varDict <- varDict[validNames]
@@ -264,16 +269,22 @@ roundValues <- function(data) {
   })
 }
 
-#' Remove rows with NA coordinates
+#' Remove rows with NA for required aes
 #' 
-removeRowsWithNA <- function(data, mapping) {
+removeRowsWithNA <- function(data, mapping, layers) {
   mapply(
-    FUN = function(df, map){
-      # NAs transformed to characters in roundValues
-      df[df[[map$x]] != "NA" & df[[map$y]] != "NA", ]
+    FUN = function(df, map, layer){
+      reqAes <- c(layer$geom$required_aes, layer$geom$non_missing_aes)
+      reqAes <- sapply(reqAes, function(x){
+        if (x %in% names(map)) map[[x]] else x
+      })
+      
+      reqData <- df[reqAes]
+      df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
     },
     data,
     mapping,
+    layers,
     SIMPLIFY = FALSE
   )
 }
@@ -287,7 +298,7 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
-  data <- removeRowsWithNA(data, mapping) # must be executed after addCustomContents
+  data <- removeRowsWithNA(data, mapping, plot$layers) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 
