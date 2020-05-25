@@ -90,7 +90,6 @@ if (typeof jQuery === 'undefined') {
                         if (clientRect.width > 0 && clientRect.height > 0) {
                            p = $e[0].getBBox();
                            box = rect[0].getBBox();
-                           console.log(box);
                            var margin = 2; // 2px
                            if (p.x > box.x + box.width - margin ||
                               p.x < box.x + margin ||
