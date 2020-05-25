@@ -280,6 +280,7 @@ removeRowsWithNA <- function(data, mapping, layers) {
       })
       
       if (length(reqAes) > 0) {
+        reqAes <- intersect(reqAes, names(df))
         reqData <- df[reqAes]
         df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
       } else {
