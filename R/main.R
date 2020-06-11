@@ -164,7 +164,14 @@ getSvgAndTooltipdata <- function(plot,
                                  customGrob = NULL,
                                  ...) {
   outfile <- tempfile(fileext = ".svg")
+  
+  currentDir <- getwd()
+  setwd(tempdir())
+  # arrangeGrob produces Rplots.pdf which may cause permission issue when run on shiny server
+  # to be more precise, ggplot2:::ggplot_gtable.ggplot_built is the origin of the issue
   grob <- gridExtra::arrangeGrob(`if`(is.null(customGrob), plot, customGrob))
+  setwd(currentDir)
+  
   data <- saveAndGetTooltips(
     plot = grob,
     ggPlotObj = plot,
