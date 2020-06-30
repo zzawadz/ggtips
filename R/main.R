@@ -106,6 +106,9 @@ htmlWithGivenTooltips <- function(svg,
                                   height = NA,
                                   width = NA,
                                   point.size = 10) {
+  if (is.null(data)) {
+    return(shiny::HTML(svg))
+  }
   data <- list(
     data = data,
     width = width,
@@ -113,6 +116,7 @@ htmlWithGivenTooltips <- function(svg,
     point.size = point.size
   )
   id <- as.numeric(Sys.time())*1000
+
   script <- paste0(
     "<script>",
     "$('[data-id=\"%s\"]').closest('.shiny-html-output').ggtips(%s);",
@@ -136,6 +140,8 @@ htmlWithGivenTooltips <- function(svg,
 #' where \code{<variable>} is a valid name of a variable mapped
 #' with \link{aes}, and \code{<label>} is a character string.
 #' It defines the composition of information displayed in tooltips.
+#' if argument is NULL it will not generate tooltip data, that may speed up
+#' generating of plots.
 #' @param plotScales A list with two fields: x and y. Defines axis
 #' scales (transformations) for the purpose of displaying original
 #' values in tooltips. If NULL (default), values are displayed "as is".
@@ -164,28 +170,40 @@ getSvgAndTooltipdata <- function(plot,
                                  customGrob = NULL,
                                  ...) {
   outfile <- tempfile(fileext = ".svg")
-  
+
   currentDir <- getwd()
   setwd(tempdir())
   # arrangeGrob produces Rplots.pdf which may cause permission issue when run on shiny server
   # to be more precise, ggplot2:::ggplot_gtable.ggplot_built is the origin of the issue
   grob <- gridExtra::arrangeGrob(`if`(is.null(customGrob), plot, customGrob))
   setwd(currentDir)
-  
-  data <- saveAndGetTooltips(
-    plot = grob,
-    ggPlotObj = plot,
-    g = grob[[1]][[1]],
-    callback = callback,
-    filename = outfile,
-    varDict = varDict,
-    plotScales = plotScales,
-    dpi = dpi,
-    width = width,
-    height = height,
-    limitsize = FALSE,
-    ...
-  )
+
+  data <- if (is.null(varDict)) {
+    ggplot2::ggsave(
+      plot = grob,
+      filename = outfile,
+      dpi = dpi,
+      width = width,
+      height = height,
+      limitsize = FALSE
+    )
+    NULL
+  } else {
+    saveAndGetTooltips(
+      plot = grob,
+      ggPlotObj = plot,
+      g = grob[[1]][[1]],
+      callback = callback,
+      filename = outfile,
+      varDict = varDict,
+      plotScales = plotScales,
+      dpi = dpi,
+      width = width,
+      height = height,
+      limitsize = FALSE,
+      ...
+    )
+  }
   svg <- readSvgAndRemoveTextLength(outfile)
   Encoding(svg) <- "UTF-8"
 
