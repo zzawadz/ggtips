@@ -80,10 +80,10 @@ if (typeof jQuery === 'undefined') {
                 }
                 var clip = $e.attr('clip-path');
                 if (clip && clip.match(/url/)) {
-                    clip = clip.replace(/url\(|==\)/ig, '')
+                    clip = clip.replace(/url\(|\)/ig, '')
                         .replace(/[#"]/g, '');
                     var root = $e.closest('svg');
-                    var rect = root.find('[id^="' + clip + '"]').find('rect');
+                    var rect = root.find('[id="' + clip + '"]').find('rect');
                     if (rect.length) {
                         var clientRect = rect[0].getBoundingClientRect();
                         // Firefox has some issues with getting non-zero rect dimensions
