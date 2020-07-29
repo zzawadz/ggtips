@@ -1,4 +1,6 @@
-## ggtips - interactive tooltips for ggplots
+![ggtips Logo](https://github.com/Roche/ggtips/blob/master/.github/logo.svg?raw=true)
+
+# ggtips - interactive tooltips for ggplots
 
 [![Build Status](https://travis-ci.org/Roche/ggtips.svg?branch=master)](https://travis-ci.org/Roche/ggtips)
 
