@@ -140,6 +140,38 @@ unmapAes <- function(data, mapping, plot) {
   )
 }
 
+#' Remove out of range data
+#'
+#' If plot has data that was filtered when specific geom was added 
+#' it should be filtered out of data.
+#'
+removeOutOfRangeData <- function(data, plot, built) {
+  if (!is.null(plot$facet$params$facets)) {
+    data <- lapply(data, function(d) {
+      for(panelId in levels(built$layout$panel_layout[["PANEL"]])) {
+        panelId <- as.numeric(panelId)
+        rangeX <- built$layout$panel_ranges[[panelId]][["x.range"]]
+        rangeY <- built$layout$panel_ranges[[panelId]][["y.range"]]
+
+        d <- d[!(d$PANEL == panelId & (d$x <= min(rangeX) | d$x >= max(rangeX))), ]
+        d <- d[!(d$PANEL == panelId & (d$y <= min(rangeY) | d$y >= max(rangeY))), ]
+      }
+    
+      d
+    })
+  } else {
+    data <- lapply(data, function(d) {
+      rangeX <- built$layout$panel_ranges[[1]][["x.range"]]
+      rangeY <- built$layout$panel_ranges[[1]][["y.range"]]
+      
+      d <- d[d$x >= min(rangeX) & d$x <= max(rangeX), ]
+      d <- d[d$y >= min(rangeY) & d$y <= max(rangeY), ]
+    })
+  }
+  
+  data
+}
+
 #' Add custom contents to the tooltips
 #'
 #' For each row of the plot data, applies a callback function that returns
@@ -299,6 +331,7 @@ removeRowsWithNA <- function(data, mapping, layers) {
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   mapping <- getLayerAesthetics(plot)
   data <- built$data
+  data <- removeOutOfRangeData(data, plot, built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)
