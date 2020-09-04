@@ -3,13 +3,21 @@ library(ggplot2)
 
 
 # Prepare input data ------------------------------------------------------
-prepareTestPlot <- function(df) {
+prepareTestPlot <- function(df, xLimit = NULL) {
   testPlot <- ggplot(
     data = df,
     mapping = aes(x = Sepal.Width, y = Sepal.Length)
-  ) +
+  ) + 
     geom_point(mapping = aes(colour = Petal.Length)) +
-    facet_wrap(~ Species)
+    facet_wrap(~ Species, scales = "fixed")
+  
+  if (!is.null(xLimit)) {
+    testPlot <- testPlot + 
+      coord_cartesian(
+        xlim = c(0, xLimit),
+        expand = TRUE
+      )
+  }
   
   list(
     testPlot = testPlot,
@@ -63,4 +71,21 @@ test_that("getTooltipData()", {
   expect_is(tt, "data.frame")
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 147) # 3 rows with NAs
+  
+  limitedPlot <- prepareTestPlot(iris, xLimit = 3)
+  limitedTooltipData <- ggtips:::getTooltipData(
+    plot = limitedPlot$testPlot,
+    built = limitedPlot$testGrob,
+    varDict = varDict,
+    plotScales = NULL,
+    callback = NULL
+  )
+  expect_is(limitedTooltipData, "list")
+  expect_length(limitedTooltipData, 1L)
+  tt <- limitedTooltipData[[1]]
+  expect_is(tt, "data.frame")
+  expect_named(tt, as.character(varDict))
+  xRange <- limitedPlot$testGrob$layout$panel_ranges[[1]]$x.range
+  nPoints <- nrow(iris[iris$Sepal.Width >= xRange[1] & iris$Sepal.Width <= xRange[2], ])
+  expect_equal(nrow(tt), nPoints)
 })

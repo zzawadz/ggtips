@@ -106,6 +106,8 @@ unmapFactors <- function(df, origin) {
       if (length(origColumn) == nrow(df)) {
         # Simply add the column from the original data frame
         df[[name]] <- origColumn
+      } else {
+        df[[name]] <- origColumn[as.numeric(rownames(df))]
       }
     }
   }
