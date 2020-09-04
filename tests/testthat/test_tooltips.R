@@ -72,7 +72,5 @@ test_that("getTooltips()", {
   tt <- points[[1]]
   expect_is(tt, "data.frame")
   expect_named(tt, c("tooltip", "coordX", "coordY"))
-  xRange <- limitedPlot$grob$layout$panel_ranges[[1]]$x.range
-  nPoints <- nrow(iris[iris$Sepal.Width >= xRange[1] & iris$Sepal.Width <= xRange[2], ])
-  expect_equal(nrow(tt), nPoints)
+  expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
 })

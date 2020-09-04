@@ -148,30 +148,41 @@ unmapAes <- function(data, mapping, plot) {
 #' it should be filtered out of data.
 #'
 removeOutOfRangeData <- function(data, plot, built) {
-  if (!is.null(plot$facet$params$facets)) {
-    data <- lapply(data, function(d) {
-      for(panelId in levels(built$layout$panel_layout[["PANEL"]])) {
-        panelId <- as.numeric(panelId)
-        rangeX <- built$layout$panel_ranges[[panelId]][["x.range"]]
-        rangeY <- built$layout$panel_ranges[[panelId]][["y.range"]]
-
-        d <- d[!(d$PANEL == panelId & (d$x <= min(rangeX) | d$x >= max(rangeX))), ]
-        d <- d[!(d$PANEL == panelId & (d$y <= min(rangeY) | d$y >= max(rangeY))), ]
-      }
+  lapply(data, function(d) {
+    range <- getRanges(plot, built)
     
-      d
-    })
+    d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
+    d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+    
+    d
+  })
+}
+
+#' Get range data
+#'
+#' Depends on ggplot2 version
+#'
+getRanges <- function(plot, built) {
+  if (packageVersion("ggplot2")$major == 2L) {
+    list(
+      x = built$layout$panel_ranges[[1]][["x.range"]],
+      y = built$layout$panel_ranges[[1]][["y.range"]]
+    )    
   } else {
-    data <- lapply(data, function(d) {
-      rangeX <- built$layout$panel_ranges[[1]][["x.range"]]
-      rangeY <- built$layout$panel_ranges[[1]][["y.range"]]
-      
-      d <- d[d$x >= min(rangeX) & d$x <= max(rangeX), ]
-      d <- d[d$y >= min(rangeY) & d$y <= max(rangeY), ]
-    })
+    scale <- ggplot2::layer_scales(plot, 1)
+    list(
+      x = ggplot2:::expand_limits_scale(
+        scale = scale$x,
+        expand = ggplot2:::default_expansion(scale$x), 
+        coord_limits = built$layout$coord$limits$x 
+      ),
+      y = ggplot2:::expand_limits_scale(
+        scale = scale$y,
+        expand = ggplot2:::default_expansion(scale$y), 
+        coord_limits = built$layout$coord$limits$y
+      )
+    )
   }
-  
-  data
 }
 
 #' Add custom contents to the tooltips
