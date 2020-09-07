@@ -308,9 +308,11 @@ roundColumn <- function(column, maxDecimals = 3) {
 #' @author Michal Jakubczak
 roundValues <- function(data) {
   lapply(data, function(df) {
-    if (nrow(df) > 0) {
-      df[["x"]] <- roundColumn(df[["x"]])
-      df[["y"]] <- roundColumn(df[["y"]])
+    if (nrow(df) > 0 && "x" %in% names(df)) {
+      df[["x"]] <- roundColumn(df[["x"]])        
+    }
+    if (nrow(df) > 0 && "y" %in% names(df)) {
+      df[["y"]] <- roundColumn(df[["y"]]) 
     }
 
     df
