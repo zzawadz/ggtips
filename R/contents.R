@@ -103,9 +103,11 @@ unmapFactors <- function(df, origin) {
       asFactor <- factor(column, levels = unique(column))
       df[[name]] <- levels(origColumn)[asFactor]
     } else {
-      if (length(origColumn) == nrow(df)) {
+      df[[name]] <- if (length(origColumn) == nrow(df)) {
         # Simply add the column from the original data frame
-        df[[name]] <- origColumn
+        origColumn
+      } else {
+        origColumn[as.numeric(rownames(df))]
       }
     }
   }
@@ -138,6 +140,49 @@ unmapAes <- function(data, mapping, plot) {
     mapping,
     SIMPLIFY = FALSE
   )
+}
+
+#' Remove out of range data
+#'
+#' If plot has data that was filtered when specific geom was added 
+#' it should be filtered out of data.
+#'
+removeOutOfRangeData <- function(data, plot, built) {
+  lapply(data, function(d) {
+    range <- getRanges(plot, built)
+    
+    d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
+    d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+    
+    d
+  })
+}
+
+#' Get range data
+#'
+#' Depends on ggplot2 version
+#'
+getRanges <- function(plot, built) {
+  if (isGgplot2()) {
+    list(
+      x = built$layout$panel_ranges[[1]][["x.range"]],
+      y = built$layout$panel_ranges[[1]][["y.range"]]
+    )    
+  } else {
+    scale <- ggplot2::layer_scales(plot, 1)
+    list(
+      x = ggplot2:::expand_limits_scale(
+        scale = scale$x,
+        expand = ggplot2:::default_expansion(scale$x), 
+        coord_limits = built$layout$coord$limits$x 
+      ),
+      y = ggplot2:::expand_limits_scale(
+        scale = scale$y,
+        expand = ggplot2:::default_expansion(scale$y), 
+        coord_limits = built$layout$coord$limits$y
+      )
+    )
+  }
 }
 
 #' Add custom contents to the tooltips
@@ -299,6 +344,7 @@ removeRowsWithNA <- function(data, mapping, layers) {
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   mapping <- getLayerAesthetics(plot)
   data <- built$data
+  data <- removeOutOfRangeData(data = data, plot = plot, built = built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)

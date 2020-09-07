@@ -5,7 +5,7 @@ library(ggplot2)
 # Prepare input data ------------------------------------------------------
 
 # ggplot2 3.x shifts grobs on its plots one col right and one row down
-is_ggplot_2.x <- packageVersion("ggplot2")$major == 2L
+is_ggplot_2.x <- ggtips:::isGgplot2()
 colShift <- `if`(is_ggplot_2.x, 0L, 1L)
 
 testPlot <- ggplot(
