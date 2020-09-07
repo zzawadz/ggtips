@@ -103,11 +103,11 @@ unmapFactors <- function(df, origin) {
       asFactor <- factor(column, levels = unique(column))
       df[[name]] <- levels(origColumn)[asFactor]
     } else {
-      if (length(origColumn) == nrow(df)) {
+      df[[name]] <- if (length(origColumn) == nrow(df)) {
         # Simply add the column from the original data frame
-        df[[name]] <- origColumn
+        origColumn
       } else {
-        df[[name]] <- origColumn[as.numeric(rownames(df))]
+        origColumn[as.numeric(rownames(df))]
       }
     }
   }
@@ -163,7 +163,7 @@ removeOutOfRangeData <- function(data, plot, built) {
 #' Depends on ggplot2 version
 #'
 getRanges <- function(plot, built) {
-  if (packageVersion("ggplot2")$major == 2L) {
+  if (isGgplot2()) {
     list(
       x = built$layout$panel_ranges[[1]][["x.range"]],
       y = built$layout$panel_ranges[[1]][["y.range"]]
@@ -344,7 +344,7 @@ removeRowsWithNA <- function(data, mapping, layers) {
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   mapping <- getLayerAesthetics(plot)
   data <- built$data
-  data <- removeOutOfRangeData(data, plot, built)
+  data <- removeOutOfRangeData(data = data, plot = plot, built = built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)

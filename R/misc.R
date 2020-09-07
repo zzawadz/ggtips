@@ -188,3 +188,8 @@ getDependencies <- function() {
     stylesheet = "ggtips.css"
   )
 }
+
+#' check if loaded ggplot2 major version is 2
+isGgplot2 <- function() {
+  packageVersion("ggplot2")$major == 2L
+}
