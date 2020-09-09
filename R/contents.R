@@ -150,9 +150,14 @@ unmapAes <- function(data, mapping, plot) {
 removeOutOfRangeData <- function(data, plot, built) {
   lapply(data, function(d) {
     range <- getRanges(plot, built)
-    
-    d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
-    d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+
+    if (is(plot$coordinates, "CoordFlip")) {
+      d <- d[d$x >= min(range$y) & d$x <= max(range$y), ]
+      d <- d[d$y >= min(range$x) & d$y <= max(range$x), ]
+    } else {
+      d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
+      d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+    }
     
     d
   })
