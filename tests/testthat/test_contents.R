@@ -3,10 +3,15 @@ library(ggplot2)
 
 
 # Prepare input data ------------------------------------------------------
-prepareTestPlot <- function(df, xLimit = NULL) {
+prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = NULL) {
+  mapping <- if (!is.null(dummy.aes)) {
+    aes(x = Sepal.Width, y = Sepal.Length, dummy.aes = Species)
+  } else {
+    aes(x = Sepal.Width, y = Sepal.Length)
+  }
   testPlot <- ggplot(
     data = df,
-    mapping = aes(x = Sepal.Width, y = Sepal.Length)
+    mapping = mapping
   ) + 
     geom_point(mapping = aes(colour = Petal.Length)) +
     facet_wrap(~ Species, scales = "fixed")
@@ -72,7 +77,7 @@ test_that("getTooltipData()", {
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 147) # 3 rows with NAs
   
-  limitedPlot <- prepareTestPlot(iris, xLimit = 3)
+  limitedPlot <- prepareTestPlot(iris, xLimit = 3, dummy.aes = "Species")
   limitedTooltipData <- ggtips:::getTooltipData(
     plot = limitedPlot$testPlot,
     built = limitedPlot$testGrob,
@@ -87,3 +92,4 @@ test_that("getTooltipData()", {
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
 })
+
