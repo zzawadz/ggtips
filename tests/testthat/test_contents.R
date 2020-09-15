@@ -3,8 +3,8 @@ library(ggplot2)
 
 
 # Prepare input data ------------------------------------------------------
-prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = NULL) {
-  mapping <- if (!is.null(dummy.aes)) {
+prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = FALSE) {
+  mapping <- if (dummy.aes) {
     aes(x = Sepal.Width, y = Sepal.Length, dummy.aes = Species)
   } else {
     aes(x = Sepal.Width, y = Sepal.Length)
@@ -77,7 +77,7 @@ test_that("getTooltipData()", {
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 147) # 3 rows with NAs
   
-  limitedPlot <- prepareTestPlot(iris, xLimit = 3, dummy.aes = "Species")
+  limitedPlot <- prepareTestPlot(iris, xLimit = 3, dummy.aes = TRUE)
   limitedTooltipData <- ggtips:::getTooltipData(
     plot = limitedPlot$testPlot,
     built = limitedPlot$testGrob,
@@ -92,4 +92,3 @@ test_that("getTooltipData()", {
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
 })
-
