@@ -103,9 +103,9 @@ unmapFactors <- function(df, origin) {
       asFactor <- factor(column, levels = unique(column))
       df[[name]] <- levels(origColumn)[asFactor]
     } else {
-      df[[name]] <- if (length(origColumn) == nrow(df)) {
+      if (length(origColumn) == nrow(df)) {
         # Simply add the column from the original data frame
-        origColumn
+        df[[name]] <- origColumn
       }
     }
   }
