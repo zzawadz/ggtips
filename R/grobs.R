@@ -177,8 +177,19 @@ getGrobSize <- function(gtree, layoutName = NULL, unit = "mm") {
 #'
 isNullUnit <- function(x) {
   if (is(x, "unit")) {
-    unit <- attr(x, "unit")
-    !is.null(unit) && unit == "null"
+    if (is(x, "unit.list")){
+      # back compatibility with grid 3.x
+      sapply(x, isNullUnit)
+    } else {
+      # single unit object
+      unit <- if (is(x, "unit_v2")){
+        # grid 4.x
+        grid::unitType(x)
+      } else {
+        attr(x, "unit")
+      }
+      unit == "null"
+    }
   } else {
     FALSE
   }
@@ -200,7 +211,7 @@ gridColWidth <- function(gtree, colNum, unit = "mm") {
   nonZeroGrobs <- sapply(gtree$grobs, function(g) { !"zeroGrob" %in% class(g) })
   grobsInColumn <- layout$l == colNum & layout$r == colNum
   whichGrobs <- which(grobsInColumn & nonZeroGrobs)
-  if (length(whichGrobs) == 0 && isNullUnit(width)) {
+  if (length(whichGrobs) == 0 && isNullUnit(width)[1]) {
     # Hidden panels have widths of 1 null, which converts to 0
     # If no non-zero grobs are available,
     # we should take measure from that hidden panel
@@ -233,7 +244,7 @@ gridRowHeight <- function(gtree, rowNum, unit = "mm") {
   nonZeroGrobs <- sapply(gtree$grobs, function(g) { !"zeroGrob" %in% class(g) })
   grobsInRow <- layout$t == rowNum & layout$b == rowNum
   whichGrobs <- which(grobsInRow & nonZeroGrobs)
-  if (length(whichGrobs) == 0 && isNullUnit(height)) {
+  if (length(whichGrobs) == 0 && isNullUnit(height)[1]) {
     # Hidden panels have heights of 1 null, which converts to 0
     # If no non-zero grobs are available,
     # we should take measure from that hidden panel
@@ -340,6 +351,13 @@ getGeomCoordsForGrob <- function(gtree,
   } else {
     #FIXME Currently only one grob of a given geometry is supported
     geomGrob <- geoms[[1]]
+    validX <- which(as.numeric(geomGrob$x) <= 1)
+    validY <- which(as.numeric(geomGrob$y) <= 1)
+    validPoints <- intersect(validX, validY)
+    
+    geomGrob$x <- geomGrob$x[validPoints]
+    geomGrob$y <- geomGrob$y[validPoints]
+    
     data.frame(
       coordX = getAbsoluteX(
         gtree,

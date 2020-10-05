@@ -5,7 +5,7 @@ library(ggplot2)
 # Prepare input data ------------------------------------------------------
 
 # ggplot2 3.x shifts grobs on its plots one col right and one row down
-is_ggplot_2.x <- packageVersion("ggplot2")$major == 2L
+is_ggplot_2.x <- ggtips:::isGgplot2()
 colShift <- `if`(is_ggplot_2.x, 0L, 1L)
 
 testPlot <- ggplot(
@@ -65,9 +65,39 @@ test_that("getGrobSize()", {
   expect_error(ggtips:::getGrobSize(gt, "i_dont_exist"))
 })
 
+unitList <- function (unit) {
+  # function copied from grid 3.x; it has been removed in grid 4.x
+  # only for test purposes, i.e. back compatibility with grid 3.x
+  if (inherits(unit, "unit.list")) 
+    unit
+  else 
+    structure(
+      class = c("unit.list", "unit"), 
+      lapply(seq_along(unit), function(i) unit[i])
+    )
+}
+
 test_that("isNullUnit()", {
   expect_false(ggtips:::isNullUnit(unit(1, "npc")))
   expect_true(ggtips:::isNullUnit(unit(1, "null")))
+  expect_true(ggtips:::isNullUnit(unitList(unit(1, "null"))))
+  expect_false(ggtips:::isNullUnit(unitList(unit(1, "mm"))))
+  expect_equal(
+    ggtips:::isNullUnit(unitList(grid::unit.c(unit(1, "null"), unit(1, "mm")))),
+    c(TRUE, FALSE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(grid::unit.c(unit(1, "null"), unit(1, "mm"))),
+    c(TRUE, FALSE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(unitList(grid::unit.c(unit(1, "null"), unit(1, "null")))),
+    c(TRUE, TRUE)
+  )
+  expect_equal(
+    ggtips:::isNullUnit(grid::unit.c(unit(1, "null"), unit(1, "null"))),
+    c(TRUE, TRUE)
+  )
 })
 
 test_that("columns and rows", {

@@ -55,8 +55,13 @@ getLayerAesthetics <- function(plot) {
     layerMapping <- if (layer$inherit.aes) {
       plotMapping
     } else {
-      layer$mapping
+      ggplot2::aes()
     }
+    
+    if (length(layer$mapping) > 0) {
+      layerMapping[names(layer$mapping)] <- layer$mapping
+    }
+    
     lapply(layerMapping, parseMapping)
   })
 }
@@ -135,6 +140,54 @@ unmapAes <- function(data, mapping, plot) {
   )
 }
 
+#' Remove out of range data
+#'
+#' If plot has data that was filtered when specific geom was added 
+#' it should be filtered out of data.
+#'
+removeOutOfRangeData <- function(data, plot, built) {
+  lapply(data, function(d) {
+    range <- getRanges(plot, built)
+
+    if (is(plot$coordinates, "CoordFlip")) {
+      d <- d[d$x >= min(range$y) & d$x <= max(range$y), ]
+      d <- d[d$y >= min(range$x) & d$y <= max(range$x), ]
+    } else {
+      d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
+      d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+    }
+    
+    d
+  })
+}
+
+#' Get range data
+#'
+#' Depends on ggplot2 version
+#'
+getRanges <- function(plot, built) {
+  if (isGgplot2()) {
+    list(
+      x = built$layout$panel_ranges[[1]][["x.range"]],
+      y = built$layout$panel_ranges[[1]][["y.range"]]
+    )    
+  } else {
+    scale <- ggplot2::layer_scales(plot, 1)
+    list(
+      x = ggplot2:::expand_limits_scale(
+        scale = scale$x,
+        expand = ggplot2:::default_expansion(scale$x), 
+        coord_limits = built$layout$coord$limits$x 
+      ),
+      y = ggplot2:::expand_limits_scale(
+        scale = scale$y,
+        expand = ggplot2:::default_expansion(scale$y), 
+        coord_limits = built$layout$coord$limits$y
+      )
+    )
+  }
+}
+
 #' Add custom contents to the tooltips
 #'
 #' For each row of the plot data, applies a callback function that returns
@@ -164,7 +217,7 @@ getNamesFromVarDict <- function(df, varDict, mapping) {
     df[[".custom"]]
   }
   validNames <- intersect(names(varDict), dfNames)
-  if (length(validNames) == 0) {
+  if (length(validNames) == 0 && is.null(customColumn)) {
     return(NULL)
   }
   varDict <- varDict[validNames]
@@ -258,10 +311,40 @@ roundColumn <- function(column, maxDecimals = 3) {
 #' @author Michal Jakubczak
 roundValues <- function(data) {
   lapply(data, function(df) {
-    df[["x"]] <- roundColumn(df[["x"]])
-    df[["y"]] <- roundColumn(df[["y"]])
+    if (nrow(df) > 0 && "x" %in% names(df)) {
+      df[["x"]] <- roundColumn(df[["x"]])        
+    }
+    if (nrow(df) > 0 && "y" %in% names(df)) {
+      df[["y"]] <- roundColumn(df[["y"]]) 
+    }
+
     df
   })
+}
+
+#' Remove rows with NA for required aes
+#' 
+removeRowsWithNA <- function(data, mapping, layers) {
+  mapply(
+    FUN = function(df, map, layer){
+      reqAes <- c(layer$geom$required_aes, layer$geom$non_missing_aes)
+      reqAes <- sapply(reqAes, function(x){
+        if (x %in% names(map)) map[[x]] else x
+      })
+      
+      if (length(reqAes) > 0) {
+        reqAes <- intersect(reqAes, names(df))
+        reqData <- df[reqAes]
+        df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
+      } else {
+        df
+      }
+    },
+    data,
+    mapping,
+    layers,
+    SIMPLIFY = FALSE
+  )
 }
 
 #'  Get data for tooltip contents
@@ -269,10 +352,12 @@ roundValues <- function(data) {
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   mapping <- getLayerAesthetics(plot)
   data <- built$data
+  data <- removeOutOfRangeData(data = data, plot = plot, built = built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
+  data <- removeRowsWithNA(data, mapping, plot$layers) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 

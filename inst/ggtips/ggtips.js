@@ -30,7 +30,7 @@ if (typeof jQuery === 'undefined') {
 }
 
 (function($) {
-    
+
     // -------------------------------------------------------------------------
     // :: GGPlot Tooltips
     // -------------------------------------------------------------------------
@@ -45,12 +45,19 @@ if (typeof jQuery === 'undefined') {
             var self = $(this);
             var tooltip = self.find('.ggtips-tooltip');
             if (!tooltip.length) {
-                warn('Invalid Container no element with ggtips-tooltip ' +
+                warn('GGTips: Invalid Container no element with ggtips-tooltip ' +
                      'class found');
                 return;
             }
-            var container = tooltip.closest('.shiny-html-output')
-                                   .addClass('ggtips-plot');
+            var $container = tooltip.closest('.shiny-html-output')
+                .addClass('ggtips-plot');
+
+            if (!$container.length) {
+                warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
+                     'class found');
+                return;
+            }
+            var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
             var selector = ['circle:not(:css(fill:none))',
@@ -58,10 +65,11 @@ if (typeof jQuery === 'undefined') {
                             'rect:size(' + settings.size + ')',
                             'line:size(' + settings.size + ')' + css,
                             'line:size(' + settings.size + ', 0)' + css,
-                            'polyline:diamond:size(' + settings.size + ')'
+                            'polyline:diamond:size(' + settings.size + ')',
+                            'polygon:size(' + settings.size + ')'
                             ].join(', ');
 
-            container.proximity('unbind').proximity(selector, {
+            $container.proximity('unbind').proximity(selector, {
                 max: settings.size * 2
             }, function(e) {
                 var $e = $(e.target);
@@ -72,26 +80,30 @@ if (typeof jQuery === 'undefined') {
                 }
                 var clip = $e.attr('clip-path');
                 if (clip && clip.match(/url/)) {
-                    clip = clip.replace(/url\(|==\)/ig, '')
+                    clip = clip.replace(/url\(|\)/ig, '')
                         .replace(/[#"]/g, '');
                     var root = $e.closest('svg');
-                    var rect = root.find('[id^="' + clip + '"]').find('rect');
+                    var rect = root.find('[id="' + clip + '"]').find('rect');
                     if (rect.length) {
-                        p = $e[0].getBBox();
-                        box = rect[0].getBBox();
-                        var margin = 2; // 2px
-                        if (p.x > box.x + box.width - margin ||
-                            p.x < box.x + margin ||
-                            p.y > box.y + box.height - margin ||
-                            p.y < box.y + margin) {
-                            return;
+                        var clientRect = rect[0].getBoundingClientRect();
+                        // Firefox has some issues with getting non-zero rect dimensions
+                        if (clientRect.width > 0 && clientRect.height > 0) {
+                           p = $e[0].getBBox();
+                           box = rect[0].getBBox();
+                           var margin = 2; // 2px
+                           if (p.x > box.x + box.width - margin ||
+                              p.x < box.x + margin ||
+                              p.y > box.y + box.height - margin ||
+                              p.y < box.y + margin) {
+                              return;
+                           }
                         }
                     }
                 }
 
                 p = findData(settings.data.points, point);
                 if (p) {
-                    var offset = container.offset();
+                    var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
                     var background = $e.css('fill');
                     //default black for black & white color scheme
@@ -100,28 +112,28 @@ if (typeof jQuery === 'undefined') {
                     }
 
                     var color = contrastColor(background);
-                    container.addClass('show-tooltip');
-                    container[0].style.setProperty('--color', color);
-                    container[0].style.setProperty('--background', background);
+                    $container.addClass('ggtips-show-tooltip');
+                    container.style.setProperty('--color', color);
+                    container.style.setProperty('--background', background);
                     tooltip.html(p.tooltip);
                     var top = box.top - (tooltip.height() / 2) +
                         (box.height / 2) - offset.top;
                     var tooltipWidth = tooltip.prop('clientWidth');
                     // 5px to compensate for ::before triangle
                     var left = box.left + box.width + 5 - offset.left;
-                    var rAlign = left + tooltipWidth + 5 > container.width();
+                    var rAlign = left + tooltipWidth + 5 > $container.width();
                     if (rAlign) {
-                        left = box.left - box.width - offset.left -
-                            tooltipWidth;
+                        // 5 - triangle width
+                        left = box.left - 5 - offset.left - tooltipWidth;
                     }
-                    tooltip.toggleClass('right', rAlign);
+                    tooltip.toggleClass('ggtips-tooltip-right', rAlign);
                     tooltip.css({
                         left: left,
                         top: top
                     });
                 }
             }, function(e) {
-                container.removeClass('show-tooltip');
+                $container.removeClass('ggtips-show-tooltip');
             });
         });
     };
@@ -167,7 +179,7 @@ if (typeof jQuery === 'undefined') {
                 point.coordX /= v.width;
                 point.coordY /= v.height;
                 return point;
-            } else if ($e.is('rect,line,:diamond')) {
+            } else if ($e.is('rect,line,:diamond,polygon')) {
                 var box = $e[0].getBBox();
                 cx = box.x + (box.width / 2);
                 cy = box.y + (box.height / 2);
@@ -409,6 +421,9 @@ if (typeof jQuery === 'undefined') {
             element = $(element);
             var spec = meta[3].split(/\s*,\s*/).map(Number);
             var rect = element[0].getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) {
+                return false;
+            }
             if (spec.length === 1) {
                 return rect.width < spec[0] && rect.height < spec[0];
             } else {

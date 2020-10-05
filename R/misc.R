@@ -128,7 +128,7 @@ splitLongWords <- function(words, width, separators = "[,;:/\\?\\!\\-\\%]") {
           breaks <- seq(from = width, to = wordLen, by = width)
         }
         # if the last character is a separator, remove it from the list
-        if (dplyr::last(breaks) == wordLen) {
+        if (tail(breaks, 1) == wordLen) {
           breaks <- head(breaks, -1)
         }
         from <- c(1, breaks + 1)
@@ -187,4 +187,9 @@ getDependencies <- function() {
     script = "ggtips.js",
     stylesheet = "ggtips.css"
   )
+}
+
+#' check if loaded ggplot2 major version is 2
+isGgplot2 <- function() {
+  packageVersion("ggplot2")$major == 2L
 }
