@@ -347,7 +347,6 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
   data <- removeRowsWithNA(data, plot$layers) # must be executed after addCustomContents
-  
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 
