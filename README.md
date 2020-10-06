@@ -128,6 +128,7 @@ to learn about *docker-machine* itself.
 ## Contributors
 <!-- CONTRIBUTORS-START -->
 * [Paweł Piątkowski](https://github.com/cosi1)
+* [Ewa Ostrowiecka](https://github.com/ewaostrowiecka)
 * [Jakub T. Jankiewicz](https://github.com/jcubic)
 * [Marcin Kamianowski](https://github.com/marcin-kam)
 * [Michał Jakubczak](https://github.com/mjakubczak)
