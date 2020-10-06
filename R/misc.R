@@ -110,13 +110,15 @@ wrapProportionalString <- function(string, width, by = "\n") {
 #' @param words a character vector.
 #' @param width integer; maximal width (in characters) of a word.
 #' @param separators character string with a regular expression.
+#' @param NAstring character string, NA value replacement
 #' The word is cut *after* each occurrence of the pattern.
 #'
 #' @return an updated character vector.
-splitLongWords <- function(words, width, separators = "[,;:/\\?\\!\\-\\%]") {
+splitLongWords <- function(words, width, separators = "[,;:/\\?\\!\\-\\%]", NAstring = "NA") {
   unlist(lapply(
     words,
     function(word) {
+      if (is.na(word)) return(NAstring)
       wordLen <- nchar(word)
       if (wordLen <= width) {
         word

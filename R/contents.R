@@ -324,24 +324,13 @@ roundValues <- function(data) {
 
 #' Remove rows with NA for required aes
 #' 
-removeRowsWithNA <- function(data, mapping, layers) {
+removeRowsWithNA <- function(data, layers) {
   mapply(
-    FUN = function(df, map, layer){
-      reqAes <- c(layer$geom$required_aes, layer$geom$non_missing_aes)
-      reqAes <- sapply(reqAes, function(x){
-        if (x %in% names(map)) map[[x]] else x
-      })
-      
-      if (length(reqAes) > 0) {
-        reqAes <- intersect(reqAes, names(df))
-        reqData <- df[reqAes]
-        df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
-      } else {
-        df
-      }
+    FUN = function(df, layer){
+      # don't inform twice about data removal (Removed n rows containing missing values (geom_point))
+      suppressWarnings(layer$geom$handle_na(df, layer$geom_params))
     },
     data,
-    mapping,
     layers,
     SIMPLIFY = FALSE
   )
@@ -357,7 +346,7 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- roundValues(data)
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
-  data <- removeRowsWithNA(data, mapping, plot$layers) # must be executed after addCustomContents
+  data <- removeRowsWithNA(data, plot$layers) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 
