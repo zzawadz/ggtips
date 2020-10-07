@@ -324,20 +324,18 @@ roundValues <- function(data) {
 
 #' Remove rows with NA for required aes
 #' 
-removeRowsWithNA <- function(data, layers, aesNames) {
+removeRowsWithNA <- function(data, layers, originalData) {
   mapply(
-    FUN = function(df, layer, origNames){
-      currentNames <- names(df)
-      # any new names (.custom, additional factors) are added to the end, so the initial order is preserved
-      names(df)[seq_along(origNames)] <- origNames
+    FUN = function(df, layer, origData){
+      origData[["row_index"]] <- seq_len(nrow(origData))
       # don't inform twice about data removal (Removed n rows containing missing values (geom_point))
-      df <- suppressWarnings(layer$geom$handle_na(df, layer$geom_params))
-      names(df) <- currentNames
-      df
+      origData <- suppressWarnings(layer$geom$handle_na(origData, layer$geom_params))
+      
+      df[origData$row_index, ]
     },
     data,
     layers,
-    aesNames,
+    originalData,
     SIMPLIFY = FALSE
   )
 }
@@ -350,10 +348,10 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- removeOutOfRangeData(data = data, plot = plot, built = built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
-  aesNames <- lapply(data, names)
+  originalData <- data
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
-  data <- removeRowsWithNA(data, plot$layers, aesNames) # must be executed after addCustomContents
+  data <- removeRowsWithNA(data, plot$layers, originalData) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 

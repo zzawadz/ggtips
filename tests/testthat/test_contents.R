@@ -95,13 +95,15 @@ test_that("getTooltipData()", {
 test_that("Custom case", {
   data <- mpg
   data[["class"]] <- factor(data[["class"]])
+  data[124, "cyl"] <- NA
   
   p <- ggplot(
     data = data,
-    mapping = aes(x = displ, y = cty)
+    mapping = aes(x = displ, y = cty, colour = cyl)
   ) + 
     geom_point() + 
     geom_line() + 
+    geom_hline(yintercept = 20) + 
     facet_wrap(~ class)
   
   varDict <- list(
