@@ -1,7 +1,6 @@
 context("Testing content-handling routines")
 library(ggplot2)
 
-
 # Prepare input data ------------------------------------------------------
 prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = FALSE) {
   mapping <- if (dummy.aes) {
@@ -91,4 +90,49 @@ test_that("getTooltipData()", {
   expect_is(tt, "data.frame")
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
+})
+
+test_that("Custom case", {
+  data <- mpg
+  data[["class"]] <- factor(data[["class"]])
+  
+  p <- ggplot(
+    data = data,
+    mapping = aes(x = displ, y = cty)
+  ) + 
+    geom_point() + 
+    geom_line() + 
+    facet_wrap(~ class)
+  
+  varDict <- list(
+    displ = "Display",
+    cty = "Cty",
+    class = "Class"
+  )
+  
+  data <- ggtips::getSvgAndTooltipdata(
+    plot = p,
+    varDict = varDict,
+    width = 300,
+    height = 400,
+    plotScales = list(x = "identity", y = "identity"),
+    addAttributes = TRUE,
+    callback = function(x) paste(x$class, x$cty)
+  )
+  
+  expect_named(data, c("svg", "data"))
+  expect_named(data[["data"]], "points")
+  expect_length(data[["data"]][["points"]], 1)
+  
+  df <- data[["data"]][["points"]][[1]]
+  expect_is(df, "data.frame")
+  expect_true(nrow(df) == 234)
+  expect_equal(
+    as.character(df$tooltip[123]), 
+    "<ul><li>pickup 17</li><li>Display: 3.0</li><li>Cty: 17</li><li>Class: pickup</li></ul>"
+  )
+  expect_equal(
+    as.character(df$tooltip[210]),
+    "<ul><li>suv 21</li><li>Display: 2.0</li><li>Cty: 21</li><li>Class: suv</li></ul>"
+  )
 })
