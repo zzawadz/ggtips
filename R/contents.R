@@ -167,25 +167,29 @@ removeOutOfRangeData <- function(data, plot, built) {
 #'
 getRanges <- function(plot, built) {
   if (isGgplot2()) {
-    list(
-      x = built$layout$panel_ranges[[1]][["x.range"]],
-      y = built$layout$panel_ranges[[1]][["y.range"]]
-    )    
+    xRanges <- sapply(built$layout$panel_ranges, function(x) x[["x.range"]])
+    yRanges <- sapply(built$layout$panel_ranges, function(x) x[["y.range"]])
   } else {
-    scale <- ggplot2::layer_scales(plot, 1)
-    list(
-      x = ggplot2:::expand_limits_scale(
-        scale = scale$x,
-        expand = ggplot2:::default_expansion(scale$x), 
+    xRanges <- sapply(built$layout$panel_scales_x, function(scale) {
+      ggplot2:::expand_limits_scale(
+        scale = scale,
+        expand = ggplot2:::default_expansion(scale), 
         coord_limits = built$layout$coord$limits$x 
-      ),
-      y = ggplot2:::expand_limits_scale(
-        scale = scale$y,
-        expand = ggplot2:::default_expansion(scale$y), 
-        coord_limits = built$layout$coord$limits$y
       )
-    )
+    })
+    yRanges <- sapply(built$layout$panel_scales_y, function(scale) {
+      ggplot2:::expand_limits_scale(
+        scale = scale,
+        expand = ggplot2:::default_expansion(scale), 
+        coord_limits = built$layout$coord$limits$y 
+      )
+    })
   }
+  
+  list(
+    x = c(min(xRanges[1, ]), max(xRanges[2, ])),
+    y = c(min(yRanges[1, ]), max(yRanges[2, ]))
+  )
 }
 
 #' Add custom contents to the tooltips
