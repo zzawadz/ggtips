@@ -351,8 +351,11 @@ getGeomCoordsForGrob <- function(gtree,
   } else {
     #FIXME Currently only one grob of a given geometry is supported
     geomGrob <- geoms[[1]]
-    validX <- which(as.numeric(geomGrob$x) <= 1)
-    validY <- which(as.numeric(geomGrob$y) <= 1)
+    
+    xVal <- as.numeric(geomGrob$x)
+    yVal <- as.numeric(geomGrob$y)
+    validX <- which(xVal >= 0 & xVal <= 1)
+    validY <- which(yVal >= 0 & yVal <= 1)
     validPoints <- intersect(validX, validY)
     
     geomGrob$x <- geomGrob$x[validPoints]
