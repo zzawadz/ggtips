@@ -149,7 +149,7 @@ removeOutOfRangeData <- function(data, plot, built) {
   lapply(data, function(d) {
     range <- getRanges(plot, built)
 
-    if (is(plot$coordinates, "CoordFlip")) {
+    if (is(plot$coordinates, "CoordFlip") && isGgplot2()) {
       d <- d[d$x >= min(range$y) & d$x <= max(range$y), ]
       d <- d[d$y >= min(range$x) & d$y <= max(range$x), ]
     } else {
