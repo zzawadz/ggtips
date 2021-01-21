@@ -113,7 +113,7 @@ htmlWithGivenTooltips <- function(svg,
     data = data,
     width = width,
     height = height,
-    point.size = point.size
+    size = point.size
   )
   id <- as.numeric(Sys.time())*1000
 
