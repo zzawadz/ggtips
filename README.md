@@ -133,4 +133,5 @@ to learn about *docker-machine* itself.
 * [Michał Jakubczak](https://github.com/mjakubczak)
 * [Ewa Ostrowiecka](https://github.com/ewaostrowiecka)
 * Michal Bartczak
+* [Adam Golubowski](https://github.com/adamgolubowski)
 <!-- CONTRIBUTORS-END -->
