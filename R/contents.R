@@ -90,13 +90,15 @@ getLayerGeom <- function(layer) {
 unmapFactors <- function(df, origin) {
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
+  # Include only matching rows
+  origin <- origin[rownames(df),]
   # Select only factor variables
   factors <- Filter(
     function(name) { is.factor(origin[[name]]) },
     names(origin)
   )
   for (name in factors) {
-    origColumn <- origin[[name]]
+    origColumn <- droplevels(origin[[name]])
     if (name %in% names(df)) {
       # Map values in the column to the original values
       column <- df[[name]]
