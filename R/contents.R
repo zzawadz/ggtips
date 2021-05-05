@@ -117,19 +117,10 @@ unmapFactors <- function(df, origin) {
 #' Unmap aesthetics
 #'
 unmapAes <- function(data, mapping, plot) {
-  plotData <- plot$data
-  # If it's a trellis, order the input data frame
-  # based on the actual order of panels
-  if (!is.null(plot$facet$params$facets)) {
-    facet <- plot$facet$params$facets[[1]]
-    trellisVar <- parseMapping(facet)
-    groups <- plotData[[trellisVar]]
-    groupLevels <- levels(groups)
-    plotData <- plotData[order(match(groups, groupLevels)), ]
-  }
+  plotLayersData <- getPlotLayerData(plot)
 
   mapply(
-    function(df, map) {
+    function(df, map, plotData) {
       mapNames <- names(map)
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
@@ -138,7 +129,38 @@ unmapAes <- function(data, mapping, plot) {
     },
     data,
     mapping,
+    plotLayersData,
     SIMPLIFY = FALSE
+  )
+}
+
+#' Get plot layer data
+#' 
+#' Returns list of data elements from plot layers. If plot layer data element is 
+#' ggplot2 waiver then plot's data element is used as default. 
+#' 
+getPlotLayerData <- function(plot) {
+  lapply(
+    plot$layers, 
+    function(l) {
+      plotLayerData <- if (is(l$data, "waiver")) {
+        plot$data
+      } else {
+        l$data
+      }
+      # If it's a trellis, order the data frame
+      # based on the actual order of panels
+      if (!is.null(plot$facet$params$facets)) {
+        facet <- plot$facet$params$facets[[1]]
+        trellisVar <- parseMapping(facet)
+        groups <- plotLayerData[[trellisVar]]
+        if (!is.null(groups)) {
+          groupLevels <- levels(groups)
+          plotLayerData <- plotLayerData[order(match(groups, groupLevels)), ]
+        }
+      }
+      plotLayerData
+    }
   )
 }
 
