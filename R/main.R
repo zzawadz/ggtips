@@ -106,7 +106,7 @@ htmlWithGivenTooltips <- function(svg,
                                   height = NA,
                                   width = NA,
                                   point.size = 10) {
-  if (is.null(data)) {
+  if (length(data) == 0) {
     return(shiny::HTML(svg))
   }
   data <- list(

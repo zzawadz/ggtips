@@ -1,3 +1,13 @@
+## 0.3.4
+### Features
+* NULL `varDict` turns off rendering tooltips
+
+### Bugs
+* Handling NA values
+* Flipped coords
+* Plots with custom ranges
+* Multi-faceted trellises
+
 ## 0.3.3
 * Updated MIT license
 
