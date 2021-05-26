@@ -1,3 +1,9 @@
+## 0.3.5
+### Features
+* fix handling of transparent plots
+### Bugs
+* fix error when tooltip function return empty list
+
 ## 0.3.4
 ### Features
 * NULL `varDict` turns off rendering tooltips
