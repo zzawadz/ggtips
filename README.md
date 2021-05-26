@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/Roche/ggtips.svg?branch=master)](https://travis-ci.org/Roche/ggtips)
 
-Our package provides a set of functions to enhance your ggplots with
+R package that provides a set of functions to enhance your ggplots with
 eye-pleasing tooltips easily, and render them in your Shiny apps.
 
 ### Preview
