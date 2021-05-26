@@ -174,7 +174,7 @@ getSvgAndTooltipdata <- function(plot,
   # avoid lazy eval to use correct directory
   plot <- plot
   customGrob <- customGrob
-  
+
   currentDir <- getwd()
   setwd(tempdir())
   # arrangeGrob produces Rplots.pdf which may cause permission issue when run on shiny server
@@ -189,7 +189,9 @@ getSvgAndTooltipdata <- function(plot,
       dpi = dpi,
       width = width,
       height = height,
-      limitsize = FALSE
+      limitsize = FALSE,
+      bg = "transparent",
+      ...
     )
     NULL
   } else {
@@ -205,6 +207,7 @@ getSvgAndTooltipdata <- function(plot,
       width = width,
       height = height,
       limitsize = FALSE,
+      bg = "transparent",
       ...
     )
   }
