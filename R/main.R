@@ -190,7 +190,6 @@ getSvgAndTooltipdata <- function(plot,
       width = width,
       height = height,
       limitsize = FALSE,
-      bg = "transparent",
       ...
     )
     NULL
@@ -207,7 +206,6 @@ getSvgAndTooltipdata <- function(plot,
       width = width,
       height = height,
       limitsize = FALSE,
-      bg = "transparent",
       ...
     )
   }

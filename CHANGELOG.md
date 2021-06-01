@@ -1,6 +1,6 @@
 ## 0.3.5
 ### Features
-* fix handling of transparent plots
+* Allow to set transparent plots
 ### Bugs
 * fix error when tooltip function return empty list
 
