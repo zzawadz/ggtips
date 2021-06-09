@@ -1,3 +1,7 @@
+## 0.3.6
+### Bugs
+* Workaround for unfilled shapes
+
 ## 0.3.5
 ### Features
 * Allow to set transparent plots
