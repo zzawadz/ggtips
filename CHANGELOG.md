@@ -3,6 +3,7 @@
 * Allow to set transparent plots
 ### Bugs
 * fix error when tooltip function return empty list
+* Workaround for unfilled shapes
 
 ## 0.3.4
 ### Features
