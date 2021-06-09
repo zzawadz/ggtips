@@ -106,7 +106,7 @@ if (typeof jQuery === 'undefined') {
                     var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
                     var background = $e.css('fill');
-		    //use 'stroke' instead of 'fill' for unfilled shapes
+                    //use 'stroke' instead of 'fill' for unfilled shapes
                     if (background === 'none') {
                         background = $e.css('stroke');
                     }
