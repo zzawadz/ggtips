@@ -100,6 +100,9 @@ getTooltips <- function(plot,
           rowHeights = rowHeights
         )
       })
+      if (!all(c("coordX", "coordY") %in% names(coords[[1]]))) {
+        coords <- unlist(coords, recursive = FALSE)
+      }
       coords <- do.call(rbind, coords)
       if (is.null(coords)) {
         NULL

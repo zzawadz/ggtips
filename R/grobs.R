@@ -67,7 +67,7 @@ nameToGrob <- function(gtree, layoutName) {
 getGeomsFromGrob <- function(g) {
   Filter(
     function(elem) {
-      !any(c("zeroGrob", "gTree", "null") %in% class(elem))
+      !any(c("zeroGrob", "gTree", "null") %in% class(elem)) || grepl("^bar", elem$name)
     },
     g$children
   )
@@ -83,7 +83,7 @@ getGeomsFromGrob <- function(g) {
 filterGeoms <- function(geomList, classes) {
   Filter(
     function(elem) {
-      any(classes %in% class(elem))
+      any(classes %in% class(elem)) && !grepl("^panel.border", elem$name)
     },
     geomList
   )
@@ -296,7 +296,7 @@ getAbsoluteX <- function(gtree, element, layoutName, colWidths, unit = "mm") {
   }
   setFocusTo(gtree, layoutName = layoutName)
   # Calculate X positions relative to the element
-  dx <- grid::convertX(element$x, unitTo = unit, valueOnly = TRUE)
+  dx <- grid::convertX(getXPositions(element), unitTo = unit, valueOnly = TRUE)
   x0 + dx
 }
 
@@ -320,7 +320,7 @@ getAbsoluteY <- function(gtree, element, layoutName, rowHeights, unit = "mm") {
   }
   setFocusTo(gtree, layoutName = layoutName)
   # Calculate Y positions relative to the element
-  dy <- grid::convertY(element$y, unitTo = unit, valueOnly = TRUE)
+  dy <- grid::convertY(getYPositions(element), unitTo = unit, valueOnly = TRUE)
   y0 + dy
 }
 
@@ -352,30 +352,71 @@ getGeomCoordsForGrob <- function(gtree,
     #FIXME Currently only one grob of a given geometry is supported
     geomGrob <- geoms[[1]]
     
-    xVal <- as.numeric(geomGrob$x)
-    yVal <- as.numeric(geomGrob$y)
-    validX <- which(xVal >= 0 & xVal <= 1)
-    validY <- which(yVal >= 0 & yVal <= 1)
-    validPoints <- intersect(validX, validY)
-    
-    geomGrob$x <- geomGrob$x[validPoints]
-    geomGrob$y <- geomGrob$y[validPoints]
-    
-    data.frame(
-      coordX = getAbsoluteX(
-        gtree,
-        element = geomGrob,
-        layoutName = layoutName,
-        colWidths = colWidths,
-        unit = unit
-      ),
-      coordY = getAbsoluteY(
-        gtree,
-        element = geomGrob,
-        layoutName = layoutName,
-        rowHeights = rowHeights,
-        unit = unit
+    if (all(c("x", "y") %in% names(geomGrob))) {
+      getGeomCoordsForSingleGrob(geomGrob, gtree, layoutName, colWidths, rowHeights, unit)
+    } else {
+      lapply(
+        X = geomGrob$children,
+        FUN = getGeomCoordsForSingleGrob,
+        gtree, 
+        layoutName,
+        colWidths,
+        rowHeights,
+        unit
       )
-    )
+    }
   }
+}
+
+getGeomCoordsForSingleGrob <- function(geomGrob,
+                                       gtree, 
+                                       layoutName, 
+                                       colWidths, 
+                                       rowHeights, 
+                                       unit) {
+  xVal <- as.numeric(geomGrob$x)
+  yVal <- as.numeric(geomGrob$y)
+  validX <- which(xVal >= 0 & xVal <= 1)
+  validY <- which(yVal >= 0 & yVal <= 1)
+  validPoints <- intersect(validX, validY)
+  
+  geomGrob$x <- geomGrob$x[validPoints]
+  geomGrob$y <- geomGrob$y[validPoints]
+  
+  data.frame(
+    coordX = getAbsoluteX(
+      gtree,
+      element = geomGrob,
+      layoutName = layoutName,
+      colWidths = colWidths,
+      unit = unit
+    ),
+    coordY = getAbsoluteY(
+      gtree,
+      element = geomGrob,
+      layoutName = layoutName,
+      rowHeights = rowHeights,
+      unit = unit
+    )
+  )
+}
+
+getXPositions <- function(g){
+  UseMethod("getXPositions")
+}
+getXPositions.default <- function(g){
+  g$x
+}
+getXPositions.polygon <- function(g){
+  grid::unit(mean(as.numeric(g$x)), "native")
+}
+
+getYPositions <- function(g){
+  UseMethod("getYPositions")
+}
+getYPositions.default <- function(g){
+  g$y
+}
+getYPositions.polygon <- function(g){
+  grid::unit(mean(as.numeric(g$y)), "native")
 }
