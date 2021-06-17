@@ -38,7 +38,7 @@ if (typeof jQuery === 'undefined') {
     $.fn.ggtips = function(options) {
         var settings = $.extend({
             size: 12,
-            debug: true,
+            debug: false,
             data: {points: []}
         }, options);
         window.data = settings.data;
@@ -117,9 +117,7 @@ if (typeof jQuery === 'undefined') {
                 if (settings.debug) {
                     e.target.style.stroke = '#000000';
                 }
-                console.log('enter');
                 if (p) {
-                    console.log('found');
                     var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
                     var background = $e.css('fill');
@@ -150,7 +148,6 @@ if (typeof jQuery === 'undefined') {
                     });
                 }
             }, function(e) {
-                console.log('leave');
                 $container.removeClass('ggtips-show-tooltip');
                 if (settings.debug) {
                     e.target.style.stroke = 'none';
@@ -274,7 +271,6 @@ if (typeof jQuery === 'undefined') {
                 }
             }
         }
-        console.log({min, candidate});
         if (min < tolerance) {
             return candidate;
         }
@@ -416,19 +412,18 @@ if (typeof jQuery === 'undefined') {
             $svg.data('viewbox', viewBox(svg));
             $elements.each(function() {
                 var self = $(this);
+                var box = this.getBBox();
+                self.data('box', box);
                 // big polygons are part of pie charts
                 if (self.is('polygon')) {
-                    var box = this.getBBox();
                     if (box.width > max || box.height > max) {
                         self.addClass('large');
-                        self.data('box', box);
                         var points = getPoints(self);
                         self.data('points', points);
                         var point = getAveragePoint(points);
                         self.data('center', point);
                     }
                 }
-
             });
             var prev = [];
             var circle;
