@@ -38,8 +38,10 @@ if (typeof jQuery === 'undefined') {
     $.fn.ggtips = function(options) {
         var settings = $.extend({
             size: 12,
+            debug: true,
             data: {points: []}
         }, options);
+        window.data = settings.data;
         return this.each(function() {
             id += 1;
             var self = $(this);
@@ -66,15 +68,18 @@ if (typeof jQuery === 'undefined') {
                             'line:size(' + settings.size + ')' + css,
                             'line:size(' + settings.size + ', 0)' + css,
                             'polyline:diamond:size(' + settings.size + ')',
-                            'polygon:size(' + settings.size + ')'
+                            'polygon'
                             ].join(', ');
 
+            var $svg = $container.find('svg');
+
             $container.proximity('unbind').proximity(selector, {
-                max: settings.size * 2
+                max: settings.size * 2,
+                debug: settings.debug
             }, function(e) {
                 var $e = $(e.target);
                 var p, box;
-                var point = getPoint(e.target);
+                var point = getPoint($svg, e.target);
                 if (!point) {
                     return;
                 }
@@ -101,8 +106,20 @@ if (typeof jQuery === 'undefined') {
                     }
                 }
 
-                p = findData(settings.data.points, point);
+                var data_point;
+                if (settings.data.gTree) {
+                    data_point = getSlicePoint($svg, point);
+                    p = findData(settings.data.gTree, data_point, 0.05);
+                } else {
+                    data_point = getPoint($svg, point);
+                    p = findData(settings.data.points, data_point, 0.05);
+                }
+                if (settings.debug) {
+                    e.target.style.stroke = '#000000';
+                }
+                console.log('enter');
                 if (p) {
+                    console.log('found');
                     var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
                     var background = $e.css('fill');
@@ -133,7 +150,11 @@ if (typeof jQuery === 'undefined') {
                     });
                 }
             }, function(e) {
+                console.log('leave');
                 $container.removeClass('ggtips-show-tooltip');
+                if (settings.debug) {
+                    e.target.style.stroke = 'none';
+                }
             });
         });
     };
@@ -166,10 +187,10 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
-    function getPoint(point) {
+    function getPoint($svg, point) {
         if (point instanceof SVGElement || point instanceof $.fn.init) {
             var $e = $(point);
-            var v = viewBox(point);
+            var v = $svg.data('viewbox');
             var cx, cy;
             if ($e.is('circle')) {
                 cx = +$e.attr('cx');
@@ -196,11 +217,29 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
-    function viewBox(element) {
-        var svg = $(element).closest('svg');
+    function getSlicePoint($svg, point) {
+        if (point instanceof SVGElement || point instanceof $.fn.init) {
+            var $e = $(point);
+            var v = $svg.data('viewbox');
+            if ($e.is('polygon')) {
+                var center = $e.data('center');
+            }
+            if (typeof center !== 'undefined') {
+                return {
+                    coordX: center.x / v.width,
+                    coordY: center.y / v.height
+                };
+            }
+        } else {
+            return point;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    function viewBox(svg) {
         // jQuery attr don't work with svg tag probably because of xml namespace
         // but it work on svg elements
-        var viewBox = svg[0].getAttribute('viewBox').split(' ');
+        var viewBox = svg.getAttribute('viewBox').split(' ');
         var width = +viewBox[2];
         var height = +viewBox[3];
         return {
@@ -217,29 +256,28 @@ if (typeof jQuery === 'undefined') {
         return Math.sqrt(square(a.coordX - b.coordX) +
                          square(a.coordY - b.coordY));
     }
-
     // -------------------------------------------------------------------------
-    function findData(points_array, point) {
-        point = getPoint(point);
+    function findData(points_array, point, tolerance) {
         if (!point) {
             return;
         }
         var min;
-        var found;
+        var candidate;
         for (var i = 0; i < points_array.length; ++i) {
             var points = points_array[i];
             for (var j = 0; j < points.length; j++) {
                 var p = points[j];
                 var d = distance(point, p);
                 if (!min || min > d) {
+                    candidate = p;
                     min = d;
-                    if (d < 0.01) {
-                        found = p;
-                    }
                 }
             }
         }
-        return found;
+        console.log({min, candidate});
+        if (min < tolerance) {
+            return candidate;
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -279,97 +317,6 @@ if (typeof jQuery === 'undefined') {
         var luminance = 0.2126 * color.red + 0.7152 * color.green +
         0.0722 * color.blue;
         return (luminance > 140) ? '#000' : '#fff';
-    }
-
-    // -------------------------------------------------------------------------
-    // :: Proximity Plugin
-    // -------------------------------------------------------------------------
-    // :: plugin is executed on parent DOM node and you pass selector,
-    // :: for elements that are children of DOM node, as first argument.
-    // :: If you're near element matched by select it will trigger callback
-    // :: passed as 2nd or 3rd argument options argument is optional
-    // :: based on https://github.com/padolsey-archive/jquery.fn
-    // -------------------------------------------------------------------------
-    $.fn.proximity = function(selector, options, enter, leave) {
-        if (arguments[0] == 'unbind') {
-            return this.off('mousemove.proximity');
-        }
-        if (typeof options === 'function') {
-            enter = options;
-            leave = enter;
-            options = {};
-        }
-        var settings = $.extend({
-            min: 0,
-            max: 10
-        }, options);
-        var min = settings.min;
-        var max = settings.max;
-        return this.each(function() {
-            var $this = $(this)
-            var elements = $this.find(selector);
-            var prev;
-            $this.on('mousemove.proximity', function(e) {
-                var closest;
-                // calculate distance to all elements matched by selector
-                // and find the closest
-                var distances = elements.map(function() {
-                    return {
-                        distance: calcDistance(this, e.pageX, e.pageY),
-                        element: this
-                    };
-                }).get();
-                distances.forEach(function(data) {
-                    if (!closest || data.distance < closest.distance) {
-                        closest = data;
-                    }
-                });
-                if (closest) {
-                    var distance = closest.distance;
-                    e.distance = closest.distance;
-                    e.target = closest.element;
-                    e.proximity = 1 - (
-                        distance < max ? distance < min ? 0 : distance / max : 1
-                    );
-                    if (e.distance < max) {
-                        if (typeof enter === 'function') {
-                            if (prev !== e.target) {
-                                prev = e.target;
-                                enter(e, e.target, e.proximity, distance);
-                            }
-                        }
-                    } else if (typeof leave === 'function') {
-                        prev = null;
-                        leave(e, e.target, e.proximity, distance);
-                    }
-                }
-            })
-        });
-    };
-
-    // -------------------------------------------------------------------------
-    function calcDistance(el, x, y) {
-        el = $(el);
-        // Calculate the distance from the closest edge of the element
-        // to the cursor's current position
-
-        var left, right, top, bottom, offset,
-            cX, cY, dX, dY,
-            distance = 0;
-
-        offset = el.offset();
-        left = offset.left;
-        top = offset.top;
-        right = left + el.outerWidth();
-        bottom = top + el.outerHeight();
-
-        cX = x > right ? right : x > left ? x : left;
-        cY = y > bottom ? bottom : y > top ? y : top;
-
-        dX = Math.abs( cX - x );
-        dY = Math.abs( cY - y );
-
-        return Math.sqrt( dX * dX + dY * dY );
     }
 
     // -------------------------------------------------------------------------
@@ -431,4 +378,276 @@ if (typeof jQuery === 'undefined') {
             }
         }
     });
+    // -------------------------------------------------------------------------
+    // :: Proximity Plugin
+    // -------------------------------------------------------------------------
+    // :: plugin is executed on parent DOM node and you pass selector,
+    // :: for elements that are children of DOM node, as first argument.
+    // :: If you're near element matched by select it will trigger callback
+    // :: passed as 2nd or 3rd argument options argument is optional
+    // :: based on https://github.com/padolsey-archive/jquery.fn
+    // -------------------------------------------------------------------------
+    $.fn.proximity = function(selector, options, enter, leave) {
+        if (arguments[0] == 'unbind') {
+            return this.off('mousemove.proximity');
+        }
+        if (typeof options === 'function') {
+            enter = options;
+            leave = enter;
+            options = {};
+        }
+        var settings = $.extend({
+            min: 0,
+            debug: false,
+            max: 10
+        }, options);
+
+        var min = settings.min;
+        var max = settings.max;
+
+        var hasLeave = typeof leave === 'function';
+        var hasEnter = typeof enter === 'function';
+        return this.each(function() {
+            var $this = $(this)
+            var $elements = $this.find(selector);
+            var $svg = $this.find('svg');
+            var svg = $svg[0];
+            // precalculate and cache constant data
+            $svg.data('viewbox', viewBox(svg));
+            $elements.each(function() {
+                var self = $(this);
+                // big polygons are part of pie charts
+                if (self.is('polygon')) {
+                    var box = this.getBBox();
+                    if (box.width > max || box.height > max) {
+                        self.addClass('large');
+                        self.data('box', box);
+                        var points = getPoints(self);
+                        self.data('points', points);
+                        var point = getAveragePoint(points);
+                        self.data('center', point);
+                    }
+                }
+
+            });
+            var prev = [];
+            var circle;
+
+            if (settings.debug) {
+                circle = createCircle(max);
+                circle.className = 'debug';
+                svg.appendChild(circle);
+            }
+            var outside = max * 2;
+            var near = max / 2;
+            $this.on('mousemove.proximity', function(e) {
+                var point = mapPointToSVG(svg, e.clientX, e.clientY);
+                if (circle) {
+                    moveTo(circle, point.x, point.y);
+                }
+                var closest;
+                // calculate distance to all elements matched by selector
+                // and find the closest
+                var distances = $elements.map(function() {
+                    if (this instanceof SVGPolygonElement) {
+                        var self = $(this);
+                        if (self.is('.large')) {
+                            var center = self.data('center');
+                            var points = self.data('points');
+                            var distance;
+                            if (isPointInPoly(points, point)) {
+                                distance = 0;
+                            } else {
+                                distance = outside;
+                            }
+                            return {
+                                distance: distance,
+                                element: this
+                            };
+                        }
+                    }
+                    return {
+                        distance: boxDistance(this, e.pageX, e.pageY),
+                        element: this
+                    };
+                }).get();
+                distances.forEach(function(data) {
+                    if (!closest || data.distance < closest.distance) {
+                        closest = data;
+                    }
+                });
+                if (closest) {
+                    var distance
+                    if (prev.length) {
+                        prev = prev.filter(function(prev) {
+                            var item = distances.find(function(d) {
+                                return d.element === prev;
+                            })
+                            if (item.distance > max) {
+                                mutateProximityEvent(e, item, min, max);
+                                if (hasLeave) {
+                                    leave(e);
+                                }
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+
+                    mutateProximityEvent(e, closest, min, max);
+
+                    if (e.distance < max) {
+                        if (hasEnter) {
+                            if (prev.indexOf(e.target) === -1) {
+                                var closer = distances.find(function(d) {
+                                    return d.distance < e.distance;
+                                });
+                                if (!closer) {
+                                    prev.push(e.target);
+                                    enter(e);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    };
+
+    function mutateProximityEvent(e, item, min, max) {
+        var distance = item.distance;
+        e.proximity = 1 - (
+            distance < max ? distance < min ? 0 : distance / max : 1
+        );
+        e.distance = item.distance;
+        e.target = item.element;
+    }
+
+
+    function mapPointToSVG(svg, x, y) {
+        var pt = svg.createSVGPoint();
+        pt.x = x;
+        pt.y = y;
+        var matrix = svg.getScreenCTM().inverse();
+        var p = pt.matrixTransform(matrix);
+        return {
+            x: p.x,
+            y: p.y
+        };
+    }
+
+    function createCircle(size) {
+        var svgns = "http://www.w3.org/2000/svg";
+        var circle = document.createElementNS(svgns, 'circle');
+        circle.setAttributeNS(null, 'cx', 0);
+        circle.setAttributeNS(null, 'cy', 0);
+        circle.setAttributeNS(null, 'r', size);
+        circle.setAttributeNS(null, 'style', 'fill: red; stroke: none');
+        return circle;
+    }
+
+    function moveTo(element, x, y) {
+        element.setAttributeNS(null, 'cx', x);
+        element.setAttributeNS(null, 'cy', y);
+    }
+
+    function intersectRect(r1, r2) {
+        var r1 = r1.getBoundingClientRect();
+        var r2 = r2.getBoundingClientRect();
+
+        return !(r2.left > r1.right ||
+                 r2.right < r1.left ||
+                 r2.top > r1.bottom ||
+                 r2.bottom < r1.top);
+    }
+    // ref: https://stackoverflow.com/a/8721483/387194
+    function isPointInPoly(points, pt){
+        var result = false;
+        for (var i = 0, j = points.length - 1; i < points.length; j = i++) {
+            if ((points[i].y > pt.y) != (points[j].y > pt.y) &&
+                (pt.x < (points[j].x - points[i].x) * (pt.y - points[i].y) / (points[j].y-points[i].y) + points[i].x)) {
+                result = !result;
+            }
+        }
+        return result;
+    }
+
+    function getPoints(element) {
+        var points = $(element).attr('points').split(/\s+/).filter(Boolean);
+        points = points.map(function(pair) {
+            pair = pair.split(',');
+            return {
+                x: +pair[0],
+                y: +pair[1]
+            };
+        });
+        return points;
+    }
+
+    // TODO: don't include in GGtips
+    function distancePoint(r, pointA, pointB) {
+        var distance = length(pointA, pointB);
+        var dx = pointB.x - pointA.x;
+        var dy = pointB.y - pointA.y;
+        var factor = r / distance;
+        var x = pointA.x + (factor * dx);
+        var y = pointA.y + (factor * dy);
+        return {
+            x: x,
+            y: y
+        };
+    }
+
+    function length(pointA, pointB) {
+        return Math.sqrt(square(pointB.x - pointA.x) + square(pointB.y - pointA.y));
+    }
+
+    function square(x) {
+        return x * x;
+    }
+
+    function getAveragePoint(points) {
+        var cx = 0, cy = 0;
+        points.forEach(function(point) {
+            cx += point.x;
+            cy += point.y;
+        });
+        var len = points.length
+        return {
+            x: cx / len,
+            y: cy / len
+        };
+    }
+
+    function boxDistance(el, x, y) {
+        el = $(el);
+        // Calculate the distance from the closest edge of the element
+        // to the cursor's current position
+
+        var left, right, top, bottom, offset,
+            cX, cY, dX, dY,
+            distance = 0;
+
+        offset = el.offset();
+        left = offset.left;
+        top = offset.top;
+        var box = el.data('box');
+        var width = box.width;
+        var height = box.height;
+        right = left + width;
+        bottom = top + height;
+
+        // inside, important fo geometries bigger than points
+        if (x > left && x < right && y > top && y < bottom) {
+            return 0;
+        }
+
+        cX = x > right ? right : x > left ? x : left;
+        cY = y > bottom ? bottom : y > top ? y : top;
+
+        dX = Math.abs( cX - x );
+        dY = Math.abs( cY - y );
+
+        return Math.sqrt( dX * dX + dY * dY );
+    }
 })(jQuery);
