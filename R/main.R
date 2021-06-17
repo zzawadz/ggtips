@@ -168,6 +168,7 @@ getSvgAndTooltipdata <- function(plot,
                                  width = NA,
                                  height = NA,
                                  customGrob = NULL,
+                                 addAttributes = FALSE,
                                  ...) {
   outfile <- tempfile(fileext = ".svg")
 
@@ -206,6 +207,7 @@ getSvgAndTooltipdata <- function(plot,
       width = width,
       height = height,
       limitsize = FALSE,
+      addAttributes = addAttributes,
       ...
     )
   }

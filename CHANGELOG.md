@@ -1,3 +1,7 @@
+## 0.3.6
+### Bugs
+* add addAttributes parameter to getSvgAndTooltipdata to fix unused argument errors
+
 ## 0.3.5
 ### Features
 * Allow to set transparent plots
