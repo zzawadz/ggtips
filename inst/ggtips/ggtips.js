@@ -413,6 +413,8 @@ if (typeof jQuery === 'undefined') {
             $elements.each(function() {
                 var self = $(this);
                 var box = this.getBBox();
+                var offset = self.offset();
+                self.data('offset', offset);
                 self.data('box', box);
                 // big polygons are part of pie charts
                 if (self.is('polygon')) {
@@ -623,7 +625,7 @@ if (typeof jQuery === 'undefined') {
             cX, cY, dX, dY,
             distance = 0;
 
-        offset = el.offset();
+        offset = el.data('offset');
         left = offset.left;
         top = offset.top;
         var box = el.data('box');
