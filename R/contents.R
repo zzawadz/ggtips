@@ -160,14 +160,7 @@ orderByPanels <- function(dfList) {
 getPlotLayerData <- function(plot) {
   lapply(
     plot$layers, 
-    function(l) {
-      plotLayerData <- if (is(l$data, "waiver")) {
-        plot$data
-      } else {
-        l$data
-      }
-      plotLayerData
-    }
+    function(l) { if (is(l$data, "waiver")) plot$data else l$data }
   )
 }
 
