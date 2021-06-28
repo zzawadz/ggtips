@@ -41,7 +41,7 @@ prepareMpgPlot <- function(data, facets = "class") {
 }
 
 testMpgTooltipData <- function(p, varDict, facetVar = "class") {
-  gb <- ggplot2::ggplot_build(p)
+  gb <- ggplot_build(p)
   rawData <- ggtips:::getTooltipData(
     plot = p,
     built = gb,
