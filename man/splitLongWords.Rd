@@ -4,14 +4,21 @@
 \alias{splitLongWords}
 \title{Split long words}
 \usage{
-splitLongWords(words, width, separators = "[,;:/\\\\?\\\\!\\\\-\\\\\%]")
+splitLongWords(
+  words,
+  width,
+  separators = "[,;:/\\\\?\\\\!\\\\-\\\\\%]",
+  NAstring = "NA"
+)
 }
 \arguments{
 \item{words}{a character vector.}
 
 \item{width}{integer; maximal width (in characters) of a word.}
 
-\item{separators}{character string with a regular expression.
+\item{separators}{character string with a regular expression.}
+
+\item{NAstring}{character string, NA value replacement
 The word is cut *after* each occurrence of the pattern.}
 }
 \value{

@@ -1,8 +1,10 @@
 context("Testing content-handling routines")
 library(ggplot2)
 
-# Prepare input data ------------------------------------------------------
-prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = FALSE) {
+
+# Auxiliary functions -----------------------------------------------------
+
+prepareIrisPlot <- function(df, xLimit = NULL, dummy.aes = FALSE) {
   mapping <- if (dummy.aes) {
     aes(x = Sepal.Width, y = Sepal.Length, dummy.aes = Species)
   } else {
@@ -22,30 +24,93 @@ prepareTestPlot <- function(df, xLimit = NULL, dummy.aes = FALSE) {
         expand = TRUE
       )
   }
-  
   list(
     testPlot = testPlot,
     testGrob = ggplot_build(testPlot)
   )
 }
 
-fullDataPlot <- prepareTestPlot(iris)
+prepareMpgPlot <- function(data, facets = "class") {
+  ggplot(
+    data = data,
+    mapping = aes(x = displ, y = cty, colour = cyl)
+  ) + 
+    geom_point() + 
+    geom_hline(yintercept = 20) + 
+    facet_wrap(facets = facets)
+}
 
+testMpgTooltipData <- function(p, varDict, facetVar = "class") {
+  gb <- ggplot_build(p)
+  rawData <- ggtips:::getTooltipData(
+    plot = p,
+    built = gb,
+    varDict = varDict,
+    plotScales = list(x = "identity", y = "identity"),
+    callback = function(x) paste(x$class, x$cty)
+  )[[1]]
+  
+  points <- ggtips::getSvgAndTooltipdata(
+    plot = p,
+    varDict = varDict,
+    width = 300,
+    height = 400,
+    plotScales = list(x = "identity", y = "identity"),
+    addAttributes = TRUE,
+    callback = function(x) paste(x$class, x$cty)
+  )$data$points[[1]]
+  
+  # Order `mpg` by the facet variable
+  orderedMPG <- if (!is.null(facetVar)) {
+    mpg[order(mpg[[facetVar]]), ]
+  } else {
+    mpg
+  }
+  
+  expect_equal(as.character(rawData$Class), orderedMPG$class)
+  expect_equal(as.numeric(rawData$Display), orderedMPG$displ)
+  expect_equal(as.integer(rawData$Cty), orderedMPG$cty)
+  expect_equal(rawData$.custom, paste(orderedMPG$class, orderedMPG$cty))
+  
+  mockupHTML <- sprintf(
+    "<ul><li>%s %s</li><li>%s: %s</li><li>%s: %s</li><li>%s: %s</li></ul>",
+    orderedMPG$class,
+    orderedMPG$cty,
+    varDict$displ,
+    format(orderedMPG$displ, digits = 2),
+    varDict$cty,
+    orderedMPG$cty,
+    varDict$class,
+    orderedMPG$class
+  )
+  expect_equal(mockupHTML, points$tooltip)
+}
+
+# Prepare input data ------------------------------------------------------
+
+fullDataPlot <- prepareIrisPlot(iris)
 df <- iris
 df[c(1, 143), "Sepal.Width"] <- NA
 df[c(64, 143), "Sepal.Length"] <- NA
-missingDataPlot <- prepareTestPlot(df)
+missingDataPlot <- prepareIrisPlot(df)
 
 # Test routines -----------------------------------------------------------
 
+##
 test_that("layers", {
   aesth <- ggtips:::getLayerAesthetics(fullDataPlot$testPlot)
   expect_gt(length(aesth), 0)
-  expect_equal(aesth[[1]], list(x = "Sepal.Width", y = "Sepal.Length", colour = "Petal.Length"))
-  
-  expect_equal(ggtips:::getLayerGeom(fullDataPlot$testPlot$layers[[1]]), "points")
+  expect_equal(
+    aesth[[1]],
+    list(x = "Sepal.Width", y = "Sepal.Length", colour = "Petal.Length")
+  )
+  expect_equal(
+    ggtips:::getLayerGeom(fullDataPlot$testPlot$layers[[1]]),
+    "points"
+  )
 })
 
+##
 test_that("getTooltipData()", {
   varDict <- list(Species = "Species", Sepal.Length = "Sepal Length")
   fullTooltipData <- ggtips:::getTooltipData(
@@ -76,7 +141,7 @@ test_that("getTooltipData()", {
   expect_named(tt, as.character(varDict))
   expect_equal(nrow(tt), 147) # 3 rows with NAs
   
-  limitedPlot <- prepareTestPlot(iris, xLimit = 3, dummy.aes = TRUE)
+  limitedPlot <- prepareIrisPlot(iris, xLimit = 3, dummy.aes = TRUE)
   limitedTooltipData <- ggtips:::getTooltipData(
     plot = limitedPlot$testPlot,
     built = limitedPlot$testGrob,
@@ -92,26 +157,19 @@ test_that("getTooltipData()", {
   expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
 })
 
+##
 test_that("Custom case", {
   data <- mpg
   data[["class"]] <- factor(data[["class"]])
   data[124, "cyl"] <- NA
   
-  p <- ggplot(
-    data = data,
-    mapping = aes(x = displ, y = cty, colour = cyl)
-  ) + 
-    geom_point() + 
-    geom_line() + 
-    geom_hline(yintercept = 20) + 
-    facet_wrap(~ class)
+  p <- prepareMpgPlot(data = data)
   
   varDict <- list(
     displ = "Display",
     cty = "Cty",
     class = "Class"
   )
-  
   data <- ggtips::getSvgAndTooltipdata(
     plot = p,
     varDict = varDict,
@@ -121,7 +179,6 @@ test_that("Custom case", {
     addAttributes = TRUE,
     callback = function(x) paste(x$class, x$cty)
   )
-  
   expect_named(data, c("svg", "data"))
   expect_named(data[["data"]], "points")
   expect_length(data[["data"]][["points"]], 1)
@@ -129,12 +186,44 @@ test_that("Custom case", {
   df <- data[["data"]][["points"]][[1]]
   expect_is(df, "data.frame")
   expect_true(nrow(df) == 234)
-  expect_equal(
-    as.character(df$tooltip[123]), 
-    "<ul><li>pickup 17</li><li>Display: 3.0</li><li>Cty: 17</li><li>Class: pickup</li></ul>"
+})
+
+##
+test_that("tooltip data", {
+  data <- mpg
+  
+  # Facet by `class`
+  data[["class"]] <- factor(data[["class"]])
+  data[124, "cyl"] <- NA
+  
+  p <- prepareMpgPlot(data = data)
+  
+  varDict <- list(
+    displ = "Display",
+    cty = "Cty",
+    class = "Class"
   )
-  expect_equal(
-    as.character(df$tooltip[210]),
-    "<ul><li>suv 21</li><li>Display: 2.0</li><li>Cty: 21</li><li>Class: suv</li></ul>"
+  testMpgTooltipData(p = p, varDict = varDict)
+
+  # Facet by `manufacturer`  
+  data[["manufacturer"]] <- factor(data[["manufacturer"]])
+  
+  p <- prepareMpgPlot(data = data, facets = "manufacturer")
+  
+  varDict <- list(
+    displ = "Display",
+    cty = "Cty",
+    class = "Class"
   )
+  testMpgTooltipData(p = p, varDict = varDict, facetVar = "manufacturer")
+  
+  # Don't facet
+  p <- prepareMpgPlot(data = data, facets = NULL)
+  
+  varDict <- list(
+    displ = "Display",
+    cty = "Cty",
+    class = "Class"
+  )
+  testMpgTooltipData(p = p, varDict = varDict, facetVar = NULL)
 })
