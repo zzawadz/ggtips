@@ -4,14 +4,29 @@
 \alias{saveAndGetTooltips}
 \title{Save ggplot and get tooltips}
 \usage{
-saveAndGetTooltips(filename, plot = last_plot(), device = NULL,
-  path = NULL, scale = 1, width = NA, height = NA,
-  units = c("in", "cm", "mm"), dpi = 300, limitsize = TRUE, ...,
-  varDict, plotScales, g, ggPlotObj = NULL, callback = NULL,
-  addAttributes = FALSE)
+saveAndGetTooltips(
+  filename,
+  plot = last_plot(),
+  device = NULL,
+  path = NULL,
+  scale = 1,
+  width = NA,
+  height = NA,
+  units = c("in", "cm", "mm", "px"),
+  dpi = 300,
+  limitsize = TRUE,
+  bg = NULL,
+  ...,
+  varDict,
+  plotScales,
+  g,
+  ggPlotObj = NULL,
+  callback = NULL,
+  addAttributes = FALSE
+)
 }
 \arguments{
-\item{plot}{ggplot object or customGrob, see "getSvgAndTooltipdata" for 
+\item{plot}{ggplot object or customGrob, see "getSvgAndTooltipdata" for
 more details.}
 
 \item{varDict}{Variable dictionary in the following format:
@@ -31,7 +46,7 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 \item{callback}{Callback function for adding custom content to the tooltips
 (see the example app).}
 
-\item{addAttributes}{Logical parameter determinig whether extra geom 
+\item{addAttributes}{Logical parameter determinig whether extra geom
 attributes should be add to tooltip object.}
 }
 \value{

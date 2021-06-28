@@ -4,8 +4,15 @@
 \alias{getGeomCoordsForGrob}
 \title{Get coords of grob's geometries}
 \usage{
-getGeomCoordsForGrob(gtree, layoutName, geomList, geom, colWidths,
-  rowHeights, unit = "mm")
+getGeomCoordsForGrob(
+  gtree,
+  layoutName,
+  geomList,
+  geom,
+  colWidths,
+  rowHeights,
+  unit = "mm"
+)
 }
 \arguments{
 \item{gtree}{A gtree object.}

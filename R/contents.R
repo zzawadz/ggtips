@@ -119,7 +119,7 @@ unmapFactors <- function(df, origin) {
 unmapAes <- function(data, mapping, plot) {
   plotLayersData <- getPlotLayerData(plot)
 
-  mapply(
+  unmapped <- mapply(
     function(df, map, plotData) {
       mapNames <- names(map)
       names(df) <- sapply(names(df), function(name) {
@@ -132,6 +132,24 @@ unmapAes <- function(data, mapping, plot) {
     plotLayersData,
     SIMPLIFY = FALSE
   )
+  orderByPanels(unmapped)
+}
+
+#' Order by panels
+#' 
+#' Orders each data frame in a list by column \code{PANEL} if it exists.
+#' 
+#' @param dfList A list of data frames.
+#' 
+#' @return A list of data frames.
+orderByPanels <- function(dfList) {
+  lapply(dfList, function(df) {
+    if (!"PANEL" %in% names(df)) {
+      df
+    } else {
+      df[order(df[["PANEL"]]), ]
+    }
+  })
 }
 
 #' Get plot layer data
@@ -147,17 +165,6 @@ getPlotLayerData <- function(plot) {
         plot$data
       } else {
         l$data
-      }
-      # If it's a trellis, order the data frame
-      # based on the actual order of panels
-      if (!is.null(plot$facet$params$facets)) {
-        facet <- plot$facet$params$facets[[1]]
-        trellisVar <- parseMapping(facet)
-        groups <- plotLayerData[[trellisVar]]
-        if (!is.null(groups)) {
-          groupLevels <- levels(groups)
-          plotLayerData <- plotLayerData[order(match(groups, groupLevels)), ]
-        }
       }
       plotLayerData
     }
