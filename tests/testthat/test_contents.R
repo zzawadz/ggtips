@@ -131,10 +131,10 @@ test_that("Custom case", {
   expect_true(nrow(df) == 234)
   expect_equal(
     as.character(df$tooltip[123]), 
-    "<ul><li>pickup 17</li><li>Display: 3.0</li><li>Cty: 17</li><li>Class: pickup</li></ul>"
+    "<ul><li>pickup 11</li><li>Display: 5.9</li><li>Cty: 11</li><li>Class: pickup</li></ul>"
   )
   expect_equal(
     as.character(df$tooltip[210]),
-    "<ul><li>suv 21</li><li>Display: 2.0</li><li>Cty: 21</li><li>Class: suv</li></ul>"
+    "<ul><li>suv 11</li><li>Display: 5.4</li><li>Cty: 11</li><li>Class: suv</li></ul>"
   )
 })
