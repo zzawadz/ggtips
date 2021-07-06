@@ -390,7 +390,7 @@ tooltipDataToText <- function(df, wrap = FALSE, width = 50) {
     text <- if (varName == ".custom") {
       df[[varName]]
     } else {
-      wrapped <- if(isTRUE(wrap)) {
+      wrapped <- if (isTRUE(wrap)) {
         wrap(df[[varName]], width = width)
       } else {
         df[[varName]]
