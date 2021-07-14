@@ -1,4 +1,6 @@
-## 0.3.6
+## 0.4.0
+### Features
+* performance improvements
 ### Bugs
 * add addAttributes parameter to getSvgAndTooltipdata to fix unused argument errors
 * Fix the ordering of plot data for some trellises
