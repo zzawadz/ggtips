@@ -38,6 +38,7 @@
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
 #' @param point.size Point size for calibrating hovering accuracy (optional).
+#' @param tooltip.width width of the tooltip
 #' @param dpi DPI value (optional).
 #' @param width Plot width (in inches; optional).
 #' @param height Plot height (in inches; optional).
@@ -54,6 +55,7 @@ renderWithTooltips <- function(plot,
                                plotScales = NULL,
                                callback = NULL,
                                point.size = 10,
+                               tooltip.width = 220,
                                dpi = 72,
                                width = NA,
                                height = NA,
@@ -81,6 +83,7 @@ renderWithTooltips <- function(plot,
       data = res$data,
       height = height,
       width = width,
+      tooltip.width = tooltip.width,
       point.size = point.size
     )
   }, name = "func", eval.env = parent.frame(), quoted = FALSE)
@@ -96,15 +99,17 @@ renderWithTooltips <- function(plot,
 #'
 #' @param svg A SVG plot object.
 #' @param data List with tooltip data.
-#' @param point.size Point size for calibrating hovering accuracy (optional).
 #' @param width Plot width (in inches; optional).
 #' @param height Plot height (in inches; optional).
+#' @param point.size Point size for calibrating hovering accuracy (optional).
+#' @param tooltip.width width of the tooltip
 #'
 #' @export
 htmlWithGivenTooltips <- function(svg,
                                   data,
                                   height = NA,
                                   width = NA,
+                                  tooltip.width = 220,
                                   point.size = 10) {
   if (length(data) == 0) {
     return(shiny::HTML(svg))
@@ -125,7 +130,11 @@ htmlWithGivenTooltips <- function(svg,
   shiny::tagList(
     shiny::HTML(svg),
     getDependencies(),
-    htmltools::tags$div(`data-id` = id, class = "ggtips-tooltip"),
+    htmltools::tags$div(
+      `data-id` = id,
+      style = paste0("--ggtips-width:", tooltip.width),
+      class = "ggtips-tooltip"
+    ),
     shiny::HTML(
       sprintf(script, id, jsonlite::toJSON(data, auto_unbox = TRUE))
     )
