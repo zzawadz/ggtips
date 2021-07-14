@@ -1,6 +1,8 @@
 ## 0.4.0
+### Features
+* Performance improvements
 ### Bugs
-* add addAttributes parameter to getSvgAndTooltipdata to fix unused argument errors
+* Add addAttributes parameter to getSvgAndTooltipdata to fix unused argument errors
 * Fix the ordering of plot data for some trellises
 * Optimize the workflow
 * Bump up minimal required versions of R and ggplot2
@@ -9,7 +11,7 @@
 ### Features
 * Allow to set transparent plots
 ### Bugs
-* fix error when tooltip function return empty list
+* Fix error when tooltip function return empty list
 * Workaround for unfilled shapes
 
 ## 0.3.4
