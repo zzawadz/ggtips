@@ -178,7 +178,6 @@ getSvgAndTooltipdata <- function(plot,
                                  height = NA,
                                  customGrob = NULL,
                                  addAttributes = FALSE,
-                                 wrap = FALSE,
                                  ...) {
   outfile <- tempfile(fileext = ".svg")
 
@@ -218,7 +217,6 @@ getSvgAndTooltipdata <- function(plot,
       height = height,
       limitsize = FALSE,
       addAttributes = addAttributes,
-      wrap = wrap,
       ...
     )
   }
@@ -259,7 +257,6 @@ plotWithTooltips <- function(plot,
                              width = NA,
                              height = NA,
                              customGrob = NULL,
-                             wrap = FALSE,
                              ...) {
   res <- ggtips::getSvgAndTooltipdata(
     plot = plot,
@@ -271,7 +268,6 @@ plotWithTooltips <- function(plot,
     width = width,
     height = height,
     customGrob = customGrob,
-    wrap = wrap,
     ...
   )
   ggtips::htmlWithGivenTooltips(

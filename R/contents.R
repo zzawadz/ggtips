@@ -385,17 +385,12 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
 
 #' Convert tooltip data to character strings
 #'
-tooltipDataToText <- function(df, wrap = FALSE, width = 50) {
+tooltipDataToText <- function(df, width = 50) {
   df <- sapply(names(df), function(varName) {
     text <- if (varName == ".custom") {
       df[[varName]]
     } else {
-      wrapped <- if (isTRUE(wrap)) {
-        wrap(df[[varName]], width = width)
-      } else {
-        df[[varName]]
-      }
-      paste(varName, wrapped, sep = ": ")
+      paste(varName, df[[varName]], sep = ": ")
     }
     paste0("<li>", text, "</li>")
   })
