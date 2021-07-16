@@ -222,14 +222,14 @@ getRanges <- function(plot, built) {
 #' an HTML character string to be appended to the contents.
 #'
 addCustomContents <- function(data, callback) {
-  fun <- if (is.null(callback)) {
-    NULL
+  if (is.null(callback)) {
+    data
   } else {
-    function(x) { c(.custom = callback(x)) }
+    fun <- function(x) { c(.custom = callback(x)) }
+    lapply(data, function(df) {
+      plyr::adply(df, .margins = 1L, .fun = fun)
+    })
   }
-  lapply(data, function(df) {
-    plyr::adply(df, .margins = 1L, .fun = fun)
-  })
 }
 
 #' Use columns defined in variable dictionary
@@ -390,8 +390,7 @@ tooltipDataToText <- function(df, width = 50) {
     text <- if (varName == ".custom") {
       df[[varName]]
     } else {
-      wrapped <- wrap(df[[varName]], width = width)
-      paste(varName, wrapped, sep = ": ")
+      paste(varName, df[[varName]], sep = ": ")
     }
     paste0("<li>", text, "</li>")
   })

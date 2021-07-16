@@ -41,7 +41,7 @@ if (typeof jQuery === 'undefined') {
             debug: false,
             data: {points: []}
         }, options);
-        window.data = settings.data;
+
         return this.each(function() {
             id += 1;
             var self = $(this);
@@ -376,6 +376,16 @@ if (typeof jQuery === 'undefined') {
         }
     });
     // -------------------------------------------------------------------------
+    // :: helper plugin
+    // -------------------------------------------------------------------------
+    $.fn.dimension = function() {
+        return $.extend(
+            {},
+            this[0].getBoundingClientRect(),
+            this.offset()
+        );
+    };
+    // -------------------------------------------------------------------------
     // :: Proximity Plugin
     // -------------------------------------------------------------------------
     // :: plugin is executed on parent DOM node and you pass selector,
@@ -404,9 +414,22 @@ if (typeof jQuery === 'undefined') {
 
         var hasLeave = typeof leave === 'function';
         var hasEnter = typeof enter === 'function';
+
         return this.each(function() {
             var $this = $(this)
             var $elements = $this.find(selector);
+            var old_dimension = $this.dimension();
+            // recalculate offset of svg change position
+            $this.on('mouseenter', function() {
+                var dimension = $this.dimension();
+                if (dimChanged(dimension, old_dimension)) {
+                    old_dimension = dimension;
+                    $elements.each(function() {
+                        var $node = $(this);
+                        $node.data('offset', $node.offset());
+                    });
+                }
+            });
             var $svg = $this.find('svg');
             var svg = $svg[0];
             // precalculate and cache constant data
@@ -481,7 +504,7 @@ if (typeof jQuery === 'undefined') {
                             var item = distances.find(function(d) {
                                 return d.element === prev;
                             })
-                            if (item.distance > max) {
+                            if (item.distance !== 0) {
                                 mutateProximityEvent(e, item, min, max);
                                 if (hasLeave) {
                                     leave(e);
@@ -521,6 +544,12 @@ if (typeof jQuery === 'undefined') {
         e.target = item.element;
     }
 
+    function dimChanged(dimA, dimB) {
+        return dimA.top !== dimB.top ||
+               dimA.left !== dimB.left ||
+               dimA.width !== dimB.width ||
+               dimA.height !== dimB.height;
+    }
 
     function mapPointToSVG(svg, x, y) {
         var pt = svg.createSVGPoint();
