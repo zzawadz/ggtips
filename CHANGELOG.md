@@ -1,3 +1,8 @@
+## 0.4.1
+### Bugs
+* cleanup the events after rendering ggtips without tooltips
+* fix points position calculation when you scroll while cursor is on top of the plot
+
 ## 0.4.0
 ### Features
 * Performance improvements
