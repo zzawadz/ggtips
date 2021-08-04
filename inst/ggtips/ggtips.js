@@ -708,6 +708,9 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
+    // :: function checks if element is good candidate to add scroll event
+    // :: this is needed because scroll event doesn't bubble
+    // -------------------------------------------------------------------------
     function isScrollable() {
         var style = getComputedStyle(this);
         var overflowX = style.getPropertyValue('overflow-x');
