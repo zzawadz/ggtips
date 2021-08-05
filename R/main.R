@@ -111,9 +111,10 @@ htmlWithGivenTooltips <- function(svg,
                                   width = NA,
                                   tooltip.width = 220,
                                   point.size = 10) {
-  unbind <- length(data) == 0
-  if (!unbind) {
-    payload <- list(
+  ggtips.arg <- if (length(data) == 0) {
+    'unbind'
+  } else {
+    list(
       data = data,
       width = width,
       height = height,
@@ -137,7 +138,7 @@ htmlWithGivenTooltips <- function(svg,
       class = "ggtips-tooltip"
     ),
     shiny::HTML(
-      sprintf(script, id, `if`(unbind, "'unbind'", jsonlite::toJSON(payload, auto_unbox = TRUE)))
+      sprintf(script, id, jsonlite::toJSON(ggtips.arg, auto_unbox = TRUE))
     )
   )
 }
