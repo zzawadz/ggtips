@@ -30,32 +30,27 @@ if (typeof jQuery === 'undefined') {
 }
 
 (function($) {
-
     // -------------------------------------------------------------------------
     // :: GGPlot Tooltips
     // -------------------------------------------------------------------------
     var id = 0;
     $.fn.ggtips = function(options) {
+        if (arguments[0] === 'unbind') {
+            return this.each(function() {
+               $(this).removeClass('ggtips-plot').proximity('unbind');
+            });
+        }
         var settings = $.extend({
             size: 12,
             debug: false,
             data: {points: []}
         }, options);
-
         return this.each(function() {
             id += 1;
-            var self = $(this);
-            var tooltip = self.find('.ggtips-tooltip');
-            if (!tooltip.length) {
+            var $container = $(this).addClass('ggtips-plot');
+            var $tooltip = $container.find('.ggtips-tooltip');
+            if (!$tooltip.length) {
                 warn('GGTips: Invalid Container no element with ggtips-tooltip ' +
-                     'class found');
-                return;
-            }
-            var $container = tooltip.closest('.shiny-html-output')
-                .addClass('ggtips-plot');
-
-            if (!$container.length) {
-                warn('GGTips: Invalid Container: no parent with shiny-html-output ' +
                      'class found');
                 return;
             }
@@ -128,13 +123,13 @@ if (typeof jQuery === 'undefined') {
                     }
 
                     var color = contrastColor(background);
-                    $container.addClass('ggtips-show-tooltip');
+                    $tooltip.addClass('ggtips-show-tooltip');
                     container.style.setProperty('--color', color);
                     container.style.setProperty('--background', background);
-                    tooltip.html(p.tooltip);
-                    var top = box.top - (tooltip.height() / 2) +
+                    $tooltip.html(p.tooltip);
+                    var top = box.top - ($tooltip.height() / 2) +
                         (box.height / 2) - offset.top;
-                    var tooltipWidth = tooltip.prop('clientWidth');
+                    var tooltipWidth = $tooltip.prop('clientWidth');
                     // 5px to compensate for ::before triangle
                     var left = box.left + box.width + 5 - offset.left;
                     var rAlign = left + tooltipWidth + 5 > $container.width();
@@ -142,14 +137,14 @@ if (typeof jQuery === 'undefined') {
                         // 5 - triangle width
                         left = box.left - 5 - offset.left - tooltipWidth;
                     }
-                    tooltip.toggleClass('ggtips-tooltip-right', rAlign);
-                    tooltip.css({
+                    $tooltip.toggleClass('ggtips-tooltip-right', rAlign);
+                    $tooltip.css({
                         left: left,
                         top: top
                     });
                 }
             }, function(e) {
-                $container.removeClass('ggtips-show-tooltip');
+                $tooltip.removeClass('ggtips-show-tooltip');
                 if (settings.debug) {
                     e.target.style.stroke = 'none';
                 }
@@ -390,13 +385,22 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     // :: plugin is executed on parent DOM node and you pass selector,
     // :: for elements that are children of DOM node, as first argument.
-    // :: If you're near element matched by select it will trigger callback
-    // :: passed as 2nd or 3rd argument options argument is optional
-    // :: based on https://github.com/padolsey-archive/jquery.fn
+    // :: If user cursor is near element matched by selector it will
+    // :: trigger the callback passed as 2nd or 3rd argument. Options argument is optional
+    // :: inspired by https://github.com/padolsey-archive/jquery.fn
     // -------------------------------------------------------------------------
     $.fn.proximity = function(selector, options, enter, leave) {
         if (arguments[0] == 'unbind') {
-            return this.off('mousemove.proximity');
+            return this.off('mousemove.proximity').each(function() {
+                var self = $(this);
+                var scrollHandler = self.data('scrollHandler');
+                var scrollable = self.data('scrollable');
+                if (typeof scrollHandler === 'function' &&
+                    scrollable instanceof $.fn.init) {
+                    scrollable.off('scroll', scrollHandler);
+                    self.removeData(['scrollHandler', 'scrollable']);
+                }
+            });
         }
         if (typeof options === 'function') {
             enter = options;
@@ -418,9 +422,11 @@ if (typeof jQuery === 'undefined') {
         return this.each(function() {
             var $this = $(this)
             var $elements = $this.find(selector);
+
             var old_dimension = $this.dimension();
+
             // recalculate offset of svg change position
-            $this.on('mouseenter', function() {
+            function refreshOffsets() {
                 var dimension = $this.dimension();
                 if (dimChanged(dimension, old_dimension)) {
                     old_dimension = dimension;
@@ -429,6 +435,14 @@ if (typeof jQuery === 'undefined') {
                         $node.data('offset', $node.offset());
                     });
                 }
+            }
+            // scroll event don't bubble, so we find scrollable elements
+            var scrollable = $this.on('mouseenter', refreshOffsets).parents().filter(isScrollable);
+            scrollable.on('scroll', refreshOffsets);
+
+            $this.data({
+                scrollHandler: refreshOffsets,
+                scrollable: scrollable
             });
             var $svg = $this.find('svg');
             var svg = $svg[0];
@@ -535,6 +549,7 @@ if (typeof jQuery === 'undefined') {
         });
     };
 
+    // -------------------------------------------------------------------------
     function mutateProximityEvent(e, item, min, max) {
         var distance = item.distance;
         e.proximity = 1 - (
@@ -544,6 +559,7 @@ if (typeof jQuery === 'undefined') {
         e.target = item.element;
     }
 
+    // -------------------------------------------------------------------------
     function dimChanged(dimA, dimB) {
         return dimA.top !== dimB.top ||
                dimA.left !== dimB.left ||
@@ -551,6 +567,7 @@ if (typeof jQuery === 'undefined') {
                dimA.height !== dimB.height;
     }
 
+    // -------------------------------------------------------------------------
     function mapPointToSVG(svg, x, y) {
         var pt = svg.createSVGPoint();
         pt.x = x;
@@ -563,6 +580,7 @@ if (typeof jQuery === 'undefined') {
         };
     }
 
+    // -------------------------------------------------------------------------
     function createCircle(size) {
         var svgns = "http://www.w3.org/2000/svg";
         var circle = document.createElementNS(svgns, 'circle');
@@ -573,11 +591,13 @@ if (typeof jQuery === 'undefined') {
         return circle;
     }
 
+    // -------------------------------------------------------------------------
     function moveTo(element, x, y) {
         element.setAttributeNS(null, 'cx', x);
         element.setAttributeNS(null, 'cy', y);
     }
 
+    // -------------------------------------------------------------------------
     function intersectRect(r1, r2) {
         var r1 = r1.getBoundingClientRect();
         var r2 = r2.getBoundingClientRect();
@@ -587,7 +607,10 @@ if (typeof jQuery === 'undefined') {
                  r2.top > r1.bottom ||
                  r2.bottom < r1.top);
     }
+
+    // -------------------------------------------------------------------------
     // ref: https://stackoverflow.com/a/8721483/387194
+    // -------------------------------------------------------------------------
     function isPointInPoly(points, pt){
         var result = false;
         for (var i = 0, j = points.length - 1; i < points.length; j = i++) {
@@ -599,6 +622,7 @@ if (typeof jQuery === 'undefined') {
         return result;
     }
 
+    // -------------------------------------------------------------------------
     function getPoints(element) {
         var points = $(element).attr('points').split(/\s+/).filter(Boolean);
         points = points.map(function(pair) {
@@ -611,6 +635,7 @@ if (typeof jQuery === 'undefined') {
         return points;
     }
 
+    // -------------------------------------------------------------------------
     // TODO: don't include in GGtips
     function distancePoint(r, pointA, pointB) {
         var distance = length(pointA, pointB);
@@ -625,14 +650,17 @@ if (typeof jQuery === 'undefined') {
         };
     }
 
+    // -------------------------------------------------------------------------
     function length(pointA, pointB) {
         return Math.sqrt(square(pointB.x - pointA.x) + square(pointB.y - pointA.y));
     }
 
+    // -------------------------------------------------------------------------
     function square(x) {
         return x * x;
     }
 
+    // -------------------------------------------------------------------------
     function getAveragePoint(points) {
         var cx = 0, cy = 0;
         points.forEach(function(point) {
@@ -646,6 +674,7 @@ if (typeof jQuery === 'undefined') {
         };
     }
 
+    // -------------------------------------------------------------------------
     function boxDistance(el, x, y) {
         el = $(el);
         // Calculate the distance from the closest edge of the element
@@ -676,5 +705,17 @@ if (typeof jQuery === 'undefined') {
         dY = Math.abs( cY - y );
 
         return Math.sqrt( dX * dX + dY * dY );
+    }
+
+    // -------------------------------------------------------------------------
+    // :: function checks if element is good candidate to add scroll event
+    // :: this is needed because scroll event doesn't bubble
+    // -------------------------------------------------------------------------
+    function isScrollable() {
+        var style = getComputedStyle(this);
+        var overflowX = style.getPropertyValue('overflow-x');
+        var overflowY = style.getPropertyValue('overflow-y');
+        var values = ['scroll', 'auto'];
+        return values.includes(overflowX) || values.includes(overflowY);
     }
 })(jQuery);

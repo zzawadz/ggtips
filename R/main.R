@@ -111,15 +111,17 @@ htmlWithGivenTooltips <- function(svg,
                                   width = NA,
                                   tooltip.width = 220,
                                   point.size = 10) {
-  if (length(data) == 0) {
-    return(shiny::HTML(svg))
+  ggtips.arg <- if (length(data) == 0) {
+    'unbind'
+  } else {
+    list(
+      data = data,
+      width = width,
+      height = height,
+      size = point.size
+    )
   }
-  data <- list(
-    data = data,
-    width = width,
-    height = height,
-    size = point.size
-  )
+
   id <- as.numeric(Sys.time())*1000
 
   script <- paste0(
@@ -136,7 +138,7 @@ htmlWithGivenTooltips <- function(svg,
       class = "ggtips-tooltip"
     ),
     shiny::HTML(
-      sprintf(script, id, jsonlite::toJSON(data, auto_unbox = TRUE))
+      sprintf(script, id, jsonlite::toJSON(ggtips.arg, auto_unbox = TRUE))
     )
   )
 }
