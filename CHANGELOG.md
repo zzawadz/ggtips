@@ -1,3 +1,7 @@
+## 0.4.2
+### Features
+* Migrate to GH Actions
+
 ## 0.4.1
 ### Bugs
 * cleanup the events after rendering ggtips without tooltips
