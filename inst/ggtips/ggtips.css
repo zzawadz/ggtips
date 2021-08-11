@@ -21,7 +21,7 @@
   display: block;
   white-space: pre-wrap;
   word-break: break-all;
-  max-width: calc(var(--ggtips-width, 220) * 1px);
+  width: calc(var(--ggtips-width, 220) * 1px);
 }
 .ggtips-tooltip::before, .ggtips-tooltip::after {
   border: 5px solid var(--background, black);
