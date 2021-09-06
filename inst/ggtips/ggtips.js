@@ -700,6 +700,10 @@ if (typeof jQuery === 'undefined') {
         left = offset.left;
         top = offset.top;
         var box = el.data('box');
+        if (!box) {
+            throw new Error("ggtips: Invlaid state. If you don't use tooltips " +
+                            "please try to call ggtips('destroy') to remove the evennts");
+        }
         var width = box.width;
         var height = box.height;
         right = left + width;
