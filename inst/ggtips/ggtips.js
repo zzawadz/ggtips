@@ -483,29 +483,34 @@ if (typeof jQuery === 'undefined') {
                 var closest;
                 // calculate distance to all elements matched by selector
                 // and find the closest
-                var distances = $elements.map(function() {
-                    if (this instanceof SVGPolygonElement) {
-                        var self = $(this);
-                        if (self.is('.large')) {
-                            var center = self.data('center');
-                            var points = self.data('points');
-                            var distance;
-                            if (isPointInPoly(points, point)) {
-                                distance = 0;
-                            } else {
-                                distance = outside;
+                try {
+                    var distances = $elements.map(function() {
+                        if (this instanceof SVGPolygonElement) {
+                            var self = $(this);
+                            if (self.is('.large')) {
+                                var center = self.data('center');
+                                var points = self.data('points');
+                                var distance;
+                                if (isPointInPoly(points, point)) {
+                                    distance = 0;
+                                } else {
+                                    distance = outside;
+                                }
+                                return {
+                                    distance: distance,
+                                    element: this
+                                };
                             }
-                            return {
-                                distance: distance,
-                                element: this
-                            };
                         }
-                    }
-                    return {
-                        distance: boxDistance(this, e.pageX, e.pageY),
-                        element: this
-                    };
-                }).get();
+                        return {
+                            distance: boxDistance(this, e.pageX, e.pageY),
+                            element: this
+                        };
+                    }).get();
+                } catch (e) {
+                    $this.proximity('unbind');
+                    throw e;
+                }
                 distances.forEach(function(data) {
                     if (!closest || data.distance < closest.distance) {
                         closest = data;
