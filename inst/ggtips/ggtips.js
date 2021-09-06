@@ -700,8 +700,8 @@ if (typeof jQuery === 'undefined') {
         left = offset.left;
         top = offset.top;
         var box = el.data('box');
-        var width = box.width;
-        var height = box.height;
+        var width = box === undefined ? 0 : box.width;
+        var height = box === undefined ? 0 : box.height;
         right = left + width;
         bottom = top + height;
 
