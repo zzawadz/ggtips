@@ -679,11 +679,11 @@ if (typeof jQuery === 'undefined') {
     // https://stackoverflow.com/questions/54790402/jquery-offset-inside-svg-is-not-working-in-safari
     function directOffset(elem) {
       rect = elem.getBoundingClientRect();
-	  win = elem.ownerDocument.defaultView;
-	  return {
-	    top: rect.top + win.pageYOffset,
-	    left: rect.left + win.pageXOffset
-	  };
+      win = elem.ownerDocument.defaultView;
+	    return {
+	      top: rect.top + win.pageYOffset,
+	      left: rect.left + win.pageXOffset
+	    };
     }
 
     // -------------------------------------------------------------------------
