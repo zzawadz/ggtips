@@ -1,6 +1,7 @@
 ## 0.4.2
 ### Bugs
 * fix shrinking tooltips
+* fix issue on Safari
 
 ## 0.4.1
 ### Bugs
