@@ -43,14 +43,14 @@
 #' values in tooltips. If NULL (default), values are displayed "as is".
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
-#' @param addAttributes Logical parameter determinig whether extra geom 
+#' @param addAttributes Logical parameter determinig whether extra geom
 #' attributes should be add to tooltip object.
 #'
-getTooltips <- function(plot, 
-                        varDict, 
-                        plotScales, 
-                        g, 
-                        callback, 
+getTooltips <- function(plot,
+                        varDict,
+                        plotScales,
+                        g,
+                        callback,
                         addAttributes = FALSE) {
   gb <- ggplot2::ggplot_build(plot)
   tooltipData <- getTooltipData(
@@ -61,7 +61,7 @@ getTooltips <- function(plot,
     callback = callback
   )
   layoutNames <- assignLayoutNamesToPanels(g)
-  
+
   totalPlotSize <- getGrobSize(g)
   plotWidth <- totalPlotSize$width
   plotHeight <- totalPlotSize$height
@@ -123,12 +123,12 @@ getTooltips <- function(plot,
     simplify = FALSE,
     USE.NAMES = TRUE
   )
-  
+
   if (addAttributes) {
     attr(res, "colWidths") <- colWidths
     attr(res, "rowHeights") <- rowHeights
   }
-  
+
   res
 }
 
@@ -137,7 +137,7 @@ getTooltips <- function(plot,
 #' Wrapper for \link{ggsave}; after saving a plot, returns an HTML-formatted
 #' list of tooltip data (see \link{getTooltips}).
 #'
-#' @param plot ggplot object or customGrob, see "getSvgAndTooltipdata" for 
+#' @param plot ggplot object or customGrob, see "getSvgAndTooltipdata" for
 #' more details.
 #' @param g A gtable object compiled from the plot (see \link{arrangeGrob}).
 #' @param varDict Variable dictionary in the following format:
@@ -151,7 +151,7 @@ getTooltips <- function(plot,
 #' @param ggPlotObj optional, used if plot is a customGrob.
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
-#' @param addAttributes Logical parameter determinig whether extra geom 
+#' @param addAttributes Logical parameter determinig whether extra geom
 #' attributes should be add to tooltip object.
 #'
 #' @return A list.
@@ -161,11 +161,11 @@ saveAndGetTooltips <- ggplot2::ggsave
 formals(saveAndGetTooltips) <- c(
   formals(saveAndGetTooltips),
   alist(
-    varDict = , 
-    plotScales = , 
-    g = , 
-    ggPlotObj = NULL, 
-    callback = NULL, 
+    varDict = ,
+    plotScales = ,
+    g = ,
+    ggPlotObj = NULL,
+    callback = NULL,
     addAttributes = FALSE
   )
 )

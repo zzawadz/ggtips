@@ -90,13 +90,15 @@ getLayerGeom <- function(layer) {
 unmapFactors <- function(df, origin) {
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
+  # Include only matching rows
+  origin <- origin[rownames(df),]
   # Select only factor variables
   factors <- Filter(
     function(name) { is.factor(origin[[name]]) },
     names(origin)
   )
   for (name in factors) {
-    origColumn <- origin[[name]]
+    origColumn <- droplevels(origin[[name]])
     if (name %in% names(df)) {
       # Map values in the column to the original values
       column <- df[[name]]
@@ -115,19 +117,10 @@ unmapFactors <- function(df, origin) {
 #' Unmap aesthetics
 #'
 unmapAes <- function(data, mapping, plot) {
-  plotData <- plot$data
-  # If it's a trellis, order the input data frame
-  # based on the actual order of panels
-  if (!is.null(plot$facet$params$facets)) {
-    facet <- plot$facet$params$facets[[1]]
-    trellisVar <- parseMapping(facet)
-    groups <- plotData[[trellisVar]]
-    groupLevels <- levels(groups)
-    plotData <- plotData[order(match(groups, groupLevels)), ]
-  }
+  plotLayersData <- getPlotLayerData(plot)
 
-  mapply(
-    function(df, map) {
+  unmapped <- mapply(
+    function(df, map, plotData) {
       mapNames <- names(map)
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
@@ -136,7 +129,90 @@ unmapAes <- function(data, mapping, plot) {
     },
     data,
     mapping,
+    plotLayersData,
     SIMPLIFY = FALSE
+  )
+  orderByPanels(unmapped)
+}
+
+#' Order by panels
+#' 
+#' Orders each data frame in a list by column \code{PANEL} if it exists.
+#' 
+#' @param dfList A list of data frames.
+#' 
+#' @return A list of data frames.
+orderByPanels <- function(dfList) {
+  lapply(dfList, function(df) {
+    if (!"PANEL" %in% names(df)) {
+      df
+    } else {
+      df[order(df[["PANEL"]]), ]
+    }
+  })
+}
+
+#' Get plot layer data
+#' 
+#' Returns list of data elements from plot layers. If plot layer data element is 
+#' ggplot2 waiver then plot's data element is used as default. 
+#' 
+getPlotLayerData <- function(plot) {
+  lapply(
+    plot$layers, 
+    function(l) { if (is(l$data, "waiver")) plot$data else l$data }
+  )
+}
+
+#' Remove out of range data
+#'
+#' If plot has data that was filtered when specific geom was added 
+#' it should be filtered out of data.
+#'
+removeOutOfRangeData <- function(data, plot, built) {
+  lapply(data, function(d) {
+    range <- getRanges(plot, built)
+
+    if (is(plot$coordinates, "CoordFlip") && isGgplot2()) {
+      d <- d[d$x >= min(range$y) & d$x <= max(range$y), ]
+      d <- d[d$y >= min(range$x) & d$y <= max(range$x), ]
+    } else {
+      d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
+      d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+    }
+    
+    d
+  })
+}
+
+#' Get range data
+#'
+#' Depends on ggplot2 version
+#'
+getRanges <- function(plot, built) {
+  if (isGgplot2()) {
+    xRanges <- sapply(built$layout$panel_ranges, function(x) x[["x.range"]])
+    yRanges <- sapply(built$layout$panel_ranges, function(x) x[["y.range"]])
+  } else {
+    xRanges <- sapply(built$layout$panel_scales_x, function(scale) {
+      ggplot2:::expand_limits_scale(
+        scale = scale,
+        expand = ggplot2:::default_expansion(scale), 
+        coord_limits = built$layout$coord$limits$x 
+      )
+    })
+    yRanges <- sapply(built$layout$panel_scales_y, function(scale) {
+      ggplot2:::expand_limits_scale(
+        scale = scale,
+        expand = ggplot2:::default_expansion(scale), 
+        coord_limits = built$layout$coord$limits$y 
+      )
+    })
+  }
+  
+  list(
+    x = c(min(xRanges[1, ]), max(xRanges[2, ])),
+    y = c(min(yRanges[1, ]), max(yRanges[2, ]))
   )
 }
 
@@ -146,14 +222,14 @@ unmapAes <- function(data, mapping, plot) {
 #' an HTML character string to be appended to the contents.
 #'
 addCustomContents <- function(data, callback) {
-  fun <- if (is.null(callback)) {
-    NULL
+  if (is.null(callback)) {
+    data
   } else {
-    function(x) { c(.custom = callback(x)) }
+    fun <- function(x) { c(.custom = callback(x)) }
+    lapply(data, function(df) {
+      plyr::adply(df, .margins = 1L, .fun = fun)
+    })
   }
-  lapply(data, function(df) {
-    plyr::adply(df, .margins = 1L, .fun = fun)
-  })
 }
 
 #' Use columns defined in variable dictionary
@@ -263,33 +339,31 @@ roundColumn <- function(column, maxDecimals = 3) {
 #' @author Michal Jakubczak
 roundValues <- function(data) {
   lapply(data, function(df) {
-    df[["x"]] <- roundColumn(df[["x"]])
-    df[["y"]] <- roundColumn(df[["y"]])
+    if (nrow(df) > 0 && "x" %in% names(df)) {
+      df[["x"]] <- roundColumn(df[["x"]])        
+    }
+    if (nrow(df) > 0 && "y" %in% names(df)) {
+      df[["y"]] <- roundColumn(df[["y"]]) 
+    }
+
     df
   })
 }
 
 #' Remove rows with NA for required aes
 #' 
-removeRowsWithNA <- function(data, mapping, layers) {
+removeRowsWithNA <- function(data, layers, originalData) {
   mapply(
-    FUN = function(df, map, layer){
-      reqAes <- c(layer$geom$required_aes, layer$geom$non_missing_aes)
-      reqAes <- sapply(reqAes, function(x){
-        if (x %in% names(map)) map[[x]] else x
-      })
+    FUN = function(df, layer, origData){
+      origData[["row_index"]] <- seq_len(nrow(origData))
+      # don't inform twice about data removal (Removed n rows containing missing values (geom_point))
+      origData <- suppressWarnings(layer$geom$handle_na(origData, layer$geom_params))
       
-      if (length(reqAes) > 0) {
-        reqAes <- intersect(reqAes, names(df))
-        reqData <- df[reqAes]
-        df[rowSums(reqData == "NA" | is.na(reqData)) == 0, ]
-      } else {
-        df
-      }
+      df[origData$row_index, ]
     },
     data,
-    mapping,
     layers,
+    originalData,
     SIMPLIFY = FALSE
   )
 }
@@ -299,11 +373,13 @@ removeRowsWithNA <- function(data, mapping, layers) {
 getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   mapping <- getLayerAesthetics(plot)
   data <- built$data
+  data <- removeOutOfRangeData(data = data, plot = plot, built = built)
   data <- untransformScales(data, plotScales = plotScales)
   data <- roundValues(data)
+  originalData <- data
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
-  data <- removeRowsWithNA(data, mapping, plot$layers) # must be executed after addCustomContents
+  data <- removeRowsWithNA(data, plot$layers, originalData) # must be executed after addCustomContents
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
 
@@ -314,8 +390,7 @@ tooltipDataToText <- function(df, width = 50) {
     text <- if (varName == ".custom") {
       df[[varName]]
     } else {
-      wrapped <- wrap(df[[varName]], width = width)
-      paste(varName, wrapped, sep = ": ")
+      paste(varName, df[[varName]], sep = ": ")
     }
     paste0("<li>", text, "</li>")
   })

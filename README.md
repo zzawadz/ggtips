@@ -1,8 +1,10 @@
-## ggtips - interactive tooltips for ggplots
+![ggtips Logo](https://github.com/Roche/ggtips/blob/master/.github/logo.svg?raw=true)
 
-[![Build Status](https://travis-ci.org/Roche/ggtips.svg?branch=master)](https://travis-ci.org/Roche/ggtips)
+# ggtips - interactive tooltips for ggplots
 
-Our package provides a set of functions to enhance your ggplots with
+![Build Status](https://github.com/Roche/ggtips/actions/workflows/main.yml/badge.svg)
+
+R package that provides a set of functions to enhance your ggplots with
 eye-pleasing tooltips easily, and render them in your Shiny apps.
 
 ### Preview
@@ -129,5 +131,7 @@ to learn about *docker-machine* itself.
 * [Jakub T. Jankiewicz](https://github.com/jcubic)
 * [Marcin Kamianowski](https://github.com/marcin-kam)
 * [Michał Jakubczak](https://github.com/mjakubczak)
+* [Ewa Ostrowiecka](https://github.com/ewaostrowiecka)
 * Michal Bartczak
+* [Adam Golubowski](https://github.com/adamgolubowski)
 <!-- CONTRIBUTORS-END -->

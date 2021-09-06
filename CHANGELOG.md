@@ -1,3 +1,38 @@
+## 0.4.2
+### Bugs
+* fix shrinking tooltips
+
+## 0.4.1
+### Bugs
+* cleanup the events after rendering ggtips without tooltips
+* fix points position calculation when you scroll while cursor is on top of the plot
+
+## 0.4.0
+### Features
+* Performance improvements
+### Bugs
+* Add addAttributes parameter to getSvgAndTooltipdata to fix unused argument errors
+* Fix the ordering of plot data for some trellises
+* Optimize the workflow
+* Bump up minimal required versions of R and ggplot2
+
+## 0.3.5
+### Features
+* Allow to set transparent plots
+### Bugs
+* Fix error when tooltip function return empty list
+* Workaround for unfilled shapes
+
+## 0.3.4
+### Features
+* NULL `varDict` turns off rendering tooltips
+
+### Bugs
+* Handling NA values
+* Flipped coords
+* Plots with custom ranges
+* Multi-faceted trellises
+
 ## 0.3.3
 * Updated MIT license
 

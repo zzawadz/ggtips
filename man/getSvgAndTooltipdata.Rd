@@ -4,9 +4,19 @@
 \alias{getSvgAndTooltipdata}
 \title{Render SVG object and return it with tooltip data}
 \usage{
-getSvgAndTooltipdata(plot, varDict, plotScales = NULL, callback = NULL,
-  point.size = 10, dpi = 72, width = NA, height = NA,
-  customGrob = NULL, ...)
+getSvgAndTooltipdata(
+  plot,
+  varDict,
+  plotScales = NULL,
+  callback = NULL,
+  point.size = 10,
+  dpi = 72,
+  width = NA,
+  height = NA,
+  customGrob = NULL,
+  addAttributes = FALSE,
+  ...
+)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}
@@ -15,7 +25,9 @@ getSvgAndTooltipdata(plot, varDict, plotScales = NULL, callback = NULL,
 \code{list(<variable> = <label>, ...)},
 where \code{<variable>} is a valid name of a variable mapped
 with \link{aes}, and \code{<label>} is a character string.
-It defines the composition of information displayed in tooltips.}
+It defines the composition of information displayed in tooltips.
+if argument is NULL it will not generate tooltip data, that may speed up
+generating of plots.}
 
 \item{plotScales}{A list with two fields: x and y. Defines axis
 scales (transformations) for the purpose of displaying original
@@ -32,7 +44,7 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 
 \item{height}{Plot height (in inches; optional).}
 
-\item{customGrob}{optional grob object. It allows to pass original plot with 
+\item{customGrob}{optional grob object. It allows to pass original plot with
 grob manipulations.}
 
 \item{...}{Additional parameters passed to \link{ggsave}.}

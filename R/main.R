@@ -38,6 +38,7 @@
 #' @param callback Callback function for adding custom content to the tooltips
 #' (see the example app).
 #' @param point.size Point size for calibrating hovering accuracy (optional).
+#' @param tooltip.width width of the tooltip
 #' @param dpi DPI value (optional).
 #' @param width Plot width (in inches; optional).
 #' @param height Plot height (in inches; optional).
@@ -54,6 +55,7 @@ renderWithTooltips <- function(plot,
                                plotScales = NULL,
                                callback = NULL,
                                point.size = 10,
+                               tooltip.width = 220,
                                dpi = 72,
                                width = NA,
                                height = NA,
@@ -81,6 +83,7 @@ renderWithTooltips <- function(plot,
       data = res$data,
       height = height,
       width = width,
+      tooltip.width = tooltip.width,
       point.size = point.size
     )
   }, name = "func", eval.env = parent.frame(), quoted = FALSE)
@@ -96,23 +99,31 @@ renderWithTooltips <- function(plot,
 #'
 #' @param svg A SVG plot object.
 #' @param data List with tooltip data.
-#' @param point.size Point size for calibrating hovering accuracy (optional).
 #' @param width Plot width (in inches; optional).
 #' @param height Plot height (in inches; optional).
+#' @param point.size Point size for calibrating hovering accuracy (optional).
+#' @param tooltip.width width of the tooltip
 #'
 #' @export
 htmlWithGivenTooltips <- function(svg,
                                   data,
                                   height = NA,
                                   width = NA,
+                                  tooltip.width = 220,
                                   point.size = 10) {
-  data <- list(
-    data = data,
-    width = width,
-    height = height,
-    point.size = point.size
-  )
+  ggtips.arg <- if (length(data) == 0) {
+    'unbind'
+  } else {
+    list(
+      data = data,
+      width = width,
+      height = height,
+      size = point.size
+    )
+  }
+
   id <- as.numeric(Sys.time())*1000
+
   script <- paste0(
     "<script>",
     "$('[data-id=\"%s\"]').closest('.shiny-html-output').ggtips(%s);",
@@ -121,9 +132,13 @@ htmlWithGivenTooltips <- function(svg,
   shiny::tagList(
     shiny::HTML(svg),
     getDependencies(),
-    htmltools::tags$div(`data-id` = id, class = "ggtips-tooltip"),
+    htmltools::tags$div(
+      `data-id` = id,
+      style = paste0("--ggtips-width:", tooltip.width),
+      class = "ggtips-tooltip"
+    ),
     shiny::HTML(
-      sprintf(script, id, jsonlite::toJSON(data, auto_unbox = TRUE))
+      sprintf(script, id, jsonlite::toJSON(ggtips.arg, auto_unbox = TRUE))
     )
   )
 }
@@ -136,6 +151,8 @@ htmlWithGivenTooltips <- function(svg,
 #' where \code{<variable>} is a valid name of a variable mapped
 #' with \link{aes}, and \code{<label>} is a character string.
 #' It defines the composition of information displayed in tooltips.
+#' if argument is NULL it will not generate tooltip data, that may speed up
+#' generating of plots.
 #' @param plotScales A list with two fields: x and y. Defines axis
 #' scales (transformations) for the purpose of displaying original
 #' values in tooltips. If NULL (default), values are displayed "as is".
@@ -162,30 +179,49 @@ getSvgAndTooltipdata <- function(plot,
                                  width = NA,
                                  height = NA,
                                  customGrob = NULL,
+                                 addAttributes = FALSE,
                                  ...) {
   outfile <- tempfile(fileext = ".svg")
-  
+
+  # avoid lazy eval to use correct directory
+  plot <- plot
+  customGrob <- customGrob
+
   currentDir <- getwd()
   setwd(tempdir())
   # arrangeGrob produces Rplots.pdf which may cause permission issue when run on shiny server
   # to be more precise, ggplot2:::ggplot_gtable.ggplot_built is the origin of the issue
   grob <- gridExtra::arrangeGrob(`if`(is.null(customGrob), plot, customGrob))
   setwd(currentDir)
-  
-  data <- saveAndGetTooltips(
-    plot = grob,
-    ggPlotObj = plot,
-    g = grob[[1]][[1]],
-    callback = callback,
-    filename = outfile,
-    varDict = varDict,
-    plotScales = plotScales,
-    dpi = dpi,
-    width = width,
-    height = height,
-    limitsize = FALSE,
-    ...
-  )
+
+  data <- if (is.null(varDict)) {
+    ggplot2::ggsave(
+      plot = grob,
+      filename = outfile,
+      dpi = dpi,
+      width = width,
+      height = height,
+      limitsize = FALSE,
+      ...
+    )
+    NULL
+  } else {
+    saveAndGetTooltips(
+      plot = grob,
+      ggPlotObj = plot,
+      g = grob[[1]][[1]],
+      callback = callback,
+      filename = outfile,
+      varDict = varDict,
+      plotScales = plotScales,
+      dpi = dpi,
+      width = width,
+      height = height,
+      limitsize = FALSE,
+      addAttributes = addAttributes,
+      ...
+    )
+  }
   svg <- readSvgAndRemoveTextLength(outfile)
   Encoding(svg) <- "UTF-8"
 

@@ -1,7 +1,7 @@
 Package: ggtips
 Type: Package
 Title: Interactive Tooltips for ggplots
-Version: 0.3.3
+Version: 0.4.1
 Authors@R: c(person("Jakub", "Jankiewicz", role = "aut",
                     email = "jakub.jankiewicz@contractors.roche.com"),
              person("Michal", "Jakubczak", role = "ctb",
@@ -16,9 +16,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.4.2)
+    R (>= 3.6.0)
 Imports:
-    ggplot2 (>= 1.1.0),
+    ggplot2 (>= 3.0.0),
     gridExtra,
     svglite,
     rlang,
@@ -26,7 +26,7 @@ Imports:
     jsonlite,
     htmltools,
     stringi
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Suggests:
     testthat,
     shiny

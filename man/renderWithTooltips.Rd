@@ -4,9 +4,18 @@
 \alias{renderWithTooltips}
 \title{Render plot with tooltips}
 \usage{
-renderWithTooltips(plot, varDict, plotScales = NULL, callback = NULL,
-  point.size = 10, dpi = 72, width = NA, height = NA,
-  customGrob = NULL, ...)
+renderWithTooltips(
+  plot,
+  varDict,
+  plotScales = NULL,
+  callback = NULL,
+  point.size = 10,
+  dpi = 72,
+  width = NA,
+  height = NA,
+  customGrob = NULL,
+  ...
+)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}
@@ -32,7 +41,7 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 
 \item{height}{Plot height (in inches; optional).}
 
-\item{customGrob}{optional grob object. It allows to pass original plot with 
+\item{customGrob}{optional grob object. It allows to pass original plot with
 grob manipulations.}
 
 \item{...}{Additional parameters passed to \link{ggsave}.}

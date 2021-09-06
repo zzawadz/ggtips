@@ -4,8 +4,7 @@
 \alias{getTooltips}
 \title{Get tooltips}
 \usage{
-getTooltips(plot, varDict, plotScales, g, callback,
-  addAttributes = FALSE)
+getTooltips(plot, varDict, plotScales, g, callback, addAttributes = FALSE)
 }
 \arguments{
 \item{plot}{A \link{ggplot} object.}
@@ -25,7 +24,7 @@ values in tooltips. If NULL (default), values are displayed "as is".}
 \item{callback}{Callback function for adding custom content to the tooltips
 (see the example app).}
 
-\item{addAttributes}{Logical parameter determinig whether extra geom 
+\item{addAttributes}{Logical parameter determinig whether extra geom
 attributes should be add to tooltip object.}
 }
 \description{

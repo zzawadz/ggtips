@@ -17,15 +17,11 @@
   line-height: 1.1em;
   border-radius: 5px;
 }
-/* TODO: check if this works, then remove */
-/*
-.shiny-html-output.show-tooltip {
-  overflow: hidden;
-}
-*/
-.shiny-html-output.ggtips-show-tooltip .ggtips-tooltip {
+.ggtips-tooltip.ggtips-show-tooltip {
   display: block;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-all;
+  width: calc(var(--ggtips-width, 220) * 1px);
 }
 .ggtips-tooltip::before, .ggtips-tooltip::after {
   border: 5px solid var(--background, black);
