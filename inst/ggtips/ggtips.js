@@ -377,7 +377,7 @@ if (typeof jQuery === 'undefined') {
         return $.extend(
             {},
             this[0].getBoundingClientRect(),
-            this.offset()
+            directOffset(this[0])
         );
     };
     // -------------------------------------------------------------------------
@@ -432,7 +432,7 @@ if (typeof jQuery === 'undefined') {
                     old_dimension = dimension;
                     $elements.each(function() {
                         var $node = $(this);
-                        $node.data('offset', $node.offset());
+                        $node.data('offset', directOffset(this));
                     });
                 }
             }
@@ -451,7 +451,7 @@ if (typeof jQuery === 'undefined') {
             $elements.each(function() {
                 var self = $(this);
                 var box = this.getBBox();
-                var offset = self.offset();
+                var offset = directOffset(this);
                 self.data('offset', offset);
                 self.data('box', box);
                 // big polygons are part of pie charts
@@ -528,9 +528,9 @@ if (typeof jQuery === 'undefined') {
                             return true;
                         });
                     }
-
+                    
                     mutateProximityEvent(e, closest, min, max);
-
+                    
                     if (e.distance < max) {
                         if (hasEnter) {
                             if (prev.indexOf(e.target) === -1) {
@@ -675,6 +675,18 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
+    // we use the direct offset because there's an issue in safari for .offset()
+    // https://stackoverflow.com/questions/54790402/jquery-offset-inside-svg-is-not-working-in-safari
+    function directOffset(elem) {
+      rect = elem.getBoundingClientRect();
+	  win = elem.ownerDocument.defaultView;
+	  return {
+	    top: rect.top + win.pageYOffset,
+	    left: rect.left + win.pageXOffset
+	  };
+    }
+
+    // -------------------------------------------------------------------------
     function boxDistance(el, x, y) {
         el = $(el);
         // Calculate the distance from the closest edge of the element
@@ -683,7 +695,7 @@ if (typeof jQuery === 'undefined') {
         var left, right, top, bottom, offset,
             cX, cY, dX, dY,
             distance = 0;
-
+        
         offset = el.data('offset');
         left = offset.left;
         top = offset.top;
