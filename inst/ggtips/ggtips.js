@@ -528,9 +528,9 @@ if (typeof jQuery === 'undefined') {
                             return true;
                         });
                     }
-                    
+
                     mutateProximityEvent(e, closest, min, max);
-                    
+
                     if (e.distance < max) {
                         if (hasEnter) {
                             if (prev.indexOf(e.target) === -1) {
@@ -695,7 +695,7 @@ if (typeof jQuery === 'undefined') {
         var left, right, top, bottom, offset,
             cX, cY, dX, dY,
             distance = 0;
-        
+
         offset = el.data('offset');
         left = offset.left;
         top = offset.top;
