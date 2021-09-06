@@ -680,10 +680,10 @@ if (typeof jQuery === 'undefined') {
     function directOffset(elem) {
       rect = elem.getBoundingClientRect();
       win = elem.ownerDocument.defaultView;
-	    return {
-	      top: rect.top + win.pageYOffset,
-	      left: rect.left + win.pageXOffset
-	    };
+      return {
+        top: rect.top + win.pageYOffset,
+        left: rect.left + win.pageXOffset
+      };
     }
 
     // -------------------------------------------------------------------------
