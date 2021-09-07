@@ -64,7 +64,9 @@ if (typeof jQuery === 'undefined') {
                             'line:size(' + settings.size + ', 0)' + css,
                             'polyline:diamond:size(' + settings.size + ')',
                             'polygon'
-                            ].join(', ');
+                            ].map(function(selector){
+                              return '.ggtips-plot ' + selector;
+                            }).join(', ');
 
             var $svg = $container.find('svg');
 
@@ -483,29 +485,34 @@ if (typeof jQuery === 'undefined') {
                 var closest;
                 // calculate distance to all elements matched by selector
                 // and find the closest
-                var distances = $elements.map(function() {
-                    if (this instanceof SVGPolygonElement) {
-                        var self = $(this);
-                        if (self.is('.large')) {
-                            var center = self.data('center');
-                            var points = self.data('points');
-                            var distance;
-                            if (isPointInPoly(points, point)) {
-                                distance = 0;
-                            } else {
-                                distance = outside;
+                try {
+                    var distances = $elements.map(function() {
+                        if (this instanceof SVGPolygonElement) {
+                            var self = $(this);
+                            if (self.is('.large')) {
+                                var center = self.data('center');
+                                var points = self.data('points');
+                                var distance;
+                                if (isPointInPoly(points, point)) {
+                                    distance = 0;
+                                } else {
+                                    distance = outside;
+                                }
+                                return {
+                                    distance: distance,
+                                    element: this
+                                };
                             }
-                            return {
-                                distance: distance,
-                                element: this
-                            };
                         }
-                    }
-                    return {
-                        distance: boxDistance(this, e.pageX, e.pageY),
-                        element: this
-                    };
-                }).get();
+                        return {
+                            distance: boxDistance(this, e.pageX, e.pageY),
+                            element: this
+                        };
+                    }).get();
+                } catch (e) {
+                    $this.proximity('unbind');
+                    throw e;
+                }
                 distances.forEach(function(data) {
                     if (!closest || data.distance < closest.distance) {
                         closest = data;
@@ -700,6 +707,10 @@ if (typeof jQuery === 'undefined') {
         left = offset.left;
         top = offset.top;
         var box = el.data('box');
+        if (!box) {
+            throw new Error("ggtips: Invlaid state. If you don't use tooltips " +
+                            "please try to call ggtips('destroy') to remove the evennts");
+        }
         var width = box.width;
         var height = box.height;
         right = left + width;
