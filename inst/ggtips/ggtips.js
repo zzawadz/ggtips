@@ -64,7 +64,9 @@ if (typeof jQuery === 'undefined') {
                             'line:size(' + settings.size + ', 0)' + css,
                             'polyline:diamond:size(' + settings.size + ')',
                             'polygon'
-                            ].join(', ');
+                            ].map(function(selector){
+                              return '.ggtips-plot ' + selector;
+                            }).join(', ');
 
             var $svg = $container.find('svg');
 
