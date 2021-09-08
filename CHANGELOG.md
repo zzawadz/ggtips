@@ -1,7 +1,7 @@
 ## 0.4.3
 ### Bugs
 * fix handlig errors when SVG plot is replaced
-* make proximity event work only when there is ggtips-plot class
+* fix adding proximity event
 
 ## 0.4.2
 ### Bugs
