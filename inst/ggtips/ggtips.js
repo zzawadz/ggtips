@@ -64,13 +64,11 @@ if (typeof jQuery === 'undefined') {
                             'line:size(' + settings.size + ', 0)' + css,
                             'polyline:diamond:size(' + settings.size + ')',
                             'polygon'
-                            ].map(function(selector){
-                              return '.ggtips-plot ' + selector;
-                            }).join(', ');
+                            ].join(', ');
 
             var $svg = $container.find('svg');
 
-            $container.proximity('unbind').proximity(selector, {
+            $svg.proximity('unbind').proximity(selector, {
                 max: settings.size * 2,
                 debug: settings.debug
             }, function(e) {
@@ -446,7 +444,12 @@ if (typeof jQuery === 'undefined') {
                 scrollHandler: refreshOffsets,
                 scrollable: scrollable
             });
-            var $svg = $this.find('svg');
+            var $svg;
+            if ($this.is('svg')) {
+                $svg = $this;
+            } else {
+                $svg = $this.find('svg');
+            }
             var svg = $svg[0];
             // precalculate and cache constant data
             $svg.data('viewbox', viewBox(svg));
