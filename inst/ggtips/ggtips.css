@@ -20,8 +20,12 @@
 .ggtips-tooltip.ggtips-show-tooltip {
   display: block;
   white-space: pre-wrap;
-  word-break: break-all;
-  width: calc(var(--ggtips-width, 220) * 1px);
+  word-break: break-word;
+  /* in case browser doesn't support css variables */
+  min-width: 220px;
+  max-width: 420px;
+  min-width: var(--ggtips-min-width, 220px);
+  max-width: var(--ggtips-max-width, 420px);
 }
 .ggtips-tooltip::before, .ggtips-tooltip::after {
   border: 5px solid var(--background, black);
