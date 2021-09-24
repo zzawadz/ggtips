@@ -1,3 +1,7 @@
+## 0.5.0
+### Improvement
+* set css variables --ggtips-min-width and --ggtips-max-width to improve line breaks in tooltips
+
 ## 0.4.3
 ### Bugs
 * fix handlig errors when SVG plot is replaced
