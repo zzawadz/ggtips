@@ -1,5 +1,5 @@
 ## 0.5.0
-### Improvement
+### Features
 * set css variables --ggtips-min-width and --ggtips-max-width to improve line breaks in tooltips
 
 ## 0.4.3
