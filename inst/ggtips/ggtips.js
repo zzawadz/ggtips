@@ -57,7 +57,7 @@ if (typeof jQuery === 'undefined') {
             var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
-            var selector = ['circle:not(:css(fill:none))',
+            var selector = ['circle',
                             'polyline:triangle:size(' + settings.size + ')',
                             'rect:size(' + settings.size + ')',
                             'line:size(' + settings.size + ')' + css,
