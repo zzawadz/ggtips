@@ -57,7 +57,7 @@ if (typeof jQuery === 'undefined') {
             var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
-            var selector = ['circle:not(:css(fill:none))',
+            var selector = ['circle',
                             'polyline:triangle:size(' + settings.size + ')',
                             'rect:size(' + settings.size + ')',
                             'line:size(' + settings.size + ')' + css,
@@ -116,9 +116,14 @@ if (typeof jQuery === 'undefined') {
                 if (p) {
                     var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
-                    var background = $e.css('fill');
-                    //default black for black & white color scheme
-                    if (background === 'none') {
+                    var background;
+                    var fill = $e.css('fill');
+                    var stroke = $e.css('stroke');
+                    if (!(stroke === 'none' || stroke === '')) {
+                        background = stroke;
+                    } else if (!(fill === 'none' || fill === '')) {
+                        background = fill;
+                    } else {
                         background = '#000';
                     }
 
@@ -326,9 +331,9 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     function rgb2hex(rgb) {
         var parts = rgb.match(/^rgb\(([^\)]+)\)$/)[1].split(/\s*,\s*/);
-        return parts.map(function(n) {
+        return "#" + parts.map(function(n) {
             return ('00' + parseInt(n, 10).toString(16)).slice(-2);
-        });
+        }).join('');
     }
 
     // -------------------------------------------------------------------------
