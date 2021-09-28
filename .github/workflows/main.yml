@@ -64,7 +64,7 @@ jobs:
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
 
       - name: Install libcurl
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.config.os == 'ubuntu-20.04'
         run: sudo apt-get install -y libcurl4-openssl-dev
         
       - name: Install dependencies
