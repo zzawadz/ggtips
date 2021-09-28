@@ -116,9 +116,14 @@ if (typeof jQuery === 'undefined') {
                 if (p) {
                     var offset = container.getBoundingClientRect();
                     box = e.target.getBoundingClientRect();
-                    var background = $e.css('fill');
-                    //default black for black & white color scheme
-                    if (background === 'none') {
+                    var background;
+                    var fill = $e.css('fill');
+                    var stroke = $e.css('stroke');
+                    if (!(stroke === 'none' || stroke === '')) {
+                        background = stroke;
+                    } else if (!(fill === 'none' || fill === '')) {
+                        background = fill;
+                    } else {
                         background = '#000';
                     }
 
