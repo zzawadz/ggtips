@@ -326,9 +326,9 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     function rgb2hex(rgb) {
         var parts = rgb.match(/^rgb\(([^\)]+)\)$/)[1].split(/\s*,\s*/);
-        return parts.map(function(n) {
+        return "#" + parts.map(function(n) {
             return ('00' + parseInt(n, 10).toString(16)).slice(-2);
-        });
+        }).join('');
     }
 
     // -------------------------------------------------------------------------
