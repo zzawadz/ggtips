@@ -1,10 +1,8 @@
 ## 0.5.0
 ### Features
-* set css variables --ggtips-min-width and --ggtips-max-width to improve line breaks in tooltips
+* allow to set min and max width of the tooltips
 ### Bugs
-* restored walkaround for setting tooltip background color on unfilled shapes
-* changed rgb2hex function to return value as string in css hex format
-* changed circle selector to more general
+* fix missing tooltips on some black & white points (created from shapes)
 
 ## 0.4.3
 ### Bugs
