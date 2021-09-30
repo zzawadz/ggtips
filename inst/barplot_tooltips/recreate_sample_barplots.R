@@ -2,61 +2,71 @@ library(ggplot2)
 library(ggtips)
 library(dplyr)
 
-p1 <- ggplot(
-  data = mtcars %>% count(cyl, gear),
-  aes(x = cyl, y = n, fill = gear)
-) + geom_bar(stat = "identity")
+# where do you want the resulting json files to be stored
+SAVE_DIR <- system.file("barplot_tooltips", package = "ggtips")
 
-p2 <- ggplot(
-  data = mtcars %>%
-    mutate(gear = as.factor(gear))  %>%
-    count(cyl, gear),
-  aes(x = cyl, y = n, fill = gear)
-) +
-  geom_bar(stat = "identity") +
-  facet_wrap(facets = "gear")
+singlelayers <- c("p1.rds", "p2.rds", "p3.rds")
 
-p3 <- ggplot(
-  data = mtcars %>%
-    mutate(hp_bin = cut(hp, breaks = 10),
-           gear = as.factor(gear)) %>%
-    count(gear, hp_bin),
-  aes(x = gear, y = n, fill = hp_bin)
-) +
-  geom_bar(stat = "identity") +
-  facet_wrap(facets = "hp_bin")
-p3
+lapply(seq_along(singlelayers), function(i) {
+  p <- readRDS(system.file(file.path("barplot_tooltips", singlelayers[i]),
+                           package = "ggtips"))
+  varDict <- list(Species = "Species")
+  gt <- gridExtra::grid.arrange(p$plot)[[1]][[1]]
 
-build_test_plot <- function(p) {
-  testPlot <- list(
-    plot = p,
-    grob = ggplot_build(p)
+  tooltips <- ggtips:::getTooltips(
+    plot = p$plot,
+    varDict = varDict,
+    plotScales = NULL,
+    g = gt,
+    callback = NULL,
+    addAttributes = TRUE
   )
-}
 
-plots <- lapply(list(p1, p2, p3), build_test_plot)
-save_names <- c("barplot_single.json", "barplot_facets.json", "barplot_complex.json")
-
-save_dir <-
-
-mapply(
-  function(p, file) {
-    varDict <- list(cyl = "cylinder", gear = "gear")
-    gt <- gridExtra::grid.arrange(p$plot)[[1]][[1]]
-
-    tooltips <- ggtips:::getTooltips(
-      plot = p$plot,
-      varDict = varDict,
-      plotScales = NULL,
-      g = gt,
-      callback = NULL,
-      addAttributes = TRUE
+  single_tooltips <- purrr::imap(tooltips, ~{
+    type <- switch (.y,
+                    "rect" = "bar",
+                    "points" = "points"
     )
-    tooltips$rect[[1]]$type <- "bar"
 
-    save_path <- file.path(save_dir, file)
-    jsonlite::write_json(tooltips$rect[[1]] , path = save_path)
-  },
-  plots,
-  save_names
-)
+    .x[[1]]$type <- type
+    .x[[1]]
+  })
+
+  names(single_tooltips)[names(single_tooltips) == "rect"] <- "bar"
+  jsonlite::write_json(single_tooltips, path = file.path(SAVE_DIR, paste0("singlelayer_", i, ".json")))
+})
+
+
+#### multilayer plot
+
+multilayers <- c("gg2.rds", "gg3.rds")
+
+lapply(seq_along(multilayers), function(i) {
+  p <- readRDS(system.file(file.path("barplot_tooltips", multilayers[i]),
+                           package = "ggtips"))
+  varDict <- list(Species = "Species")
+  gt <- gridExtra::grid.arrange(p$plot)[[1]][[1]]
+
+  tooltips <- ggtips:::getTooltips(
+    plot = p$plot,
+    varDict = varDict,
+    plotScales = NULL,
+    g = gt,
+    callback = NULL,
+    addAttributes = TRUE
+  )
+  tooltips
+
+  multi_tooltips <- purrr::imap(tooltips, ~{
+    type <- switch (.y,
+                    "rect" = "bar",
+                    "points" = "points"
+    )
+
+    .x[[1]]$type <- type
+    .x[[1]]
+  })
+
+  names(multi_tooltips)[names(multi_tooltips) == "rect"] <- "bar"
+  jsonlite::write_json(multi_tooltips, path = file.path(SAVE_DIR, paste0("multilayer_", i, ".json")))
+})
