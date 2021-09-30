@@ -43,6 +43,7 @@ if (typeof jQuery === 'undefined') {
         var settings = $.extend({
             size: 12,
             debug: false,
+            colors: [],
             data: {points: []}
         }, options);
         return this.each(function() {
@@ -57,14 +58,19 @@ if (typeof jQuery === 'undefined') {
             var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
-            var selector = ['circle',
-                            'polyline:triangle:size(' + settings.size + ')',
-                            'rect:size(' + settings.size + ')',
-                            'line:size(' + settings.size + ')' + css,
-                            'line:size(' + settings.size + ', 0)' + css,
-                            'polyline:diamond:size(' + settings.size + ')',
-                            'polygon'
-                            ].join(', ');
+            var selector = [
+                'circle',
+                'polyline:triangle:size(' + settings.size + ')',
+                'rect:size(' + settings.size + ')',
+                'line:size(' + settings.size + ')' + css,
+                'line:size(' + settings.size + ', 0)' + css,
+                'polyline:diamond:size(' + settings.size + ')',
+                'polygon'
+            ].join(', ');
+            selectors = selectors.concat(settings.colors.map(color => {
+                return `rect:css(fill:${color.toLowerCase()})`;
+            }));
+            var selector = selectors.join(', ');
 
             var $svg = $container.find('svg');
 
@@ -102,7 +108,10 @@ if (typeof jQuery === 'undefined') {
                 }
 
                 var data_point;
-                if (settings.data.gTree) {
+                if (settings.type == 'bar') {
+                    data_point = getRectCoords($svg, point);
+                    p = findData(settings.data.points, data_point, 20);
+                } else if (settings.data.gTree) {
                     // Temporary for Pie-Charts
                     data_point = getSlicePoint($svg, point);
                     p = findData(settings.data.gTree, data_point, 0.05);
@@ -185,34 +194,49 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
-    function getPoint($svg, point) {
-        if (point instanceof SVGElement || point instanceof $.fn.init) {
-            var $e = $(point);
-            var v = $svg.data('viewbox');
-            var cx, cy;
-            if ($e.is('circle')) {
-                cx = +$e.attr('cx');
-                cy = +$e.attr('cy');
-            } else if ($e.is(':triangle')) {
-                point = triangleCenter($e);
-                point.coordX /= v.width;
-                point.coordY /= v.height;
-                return point;
-            } else if ($e.is('rect,line,:diamond,polygon')) {
-                var box = $e[0].getBBox();
-                cx = box.x + (box.width / 2);
-                cy = box.y + (box.height / 2);
+    function widthViewbox(fn) {
+        return function($svg, point) {
+            if (point instanceof SVGElement || point instanceof $.fn.init) {
+                var $e = $(point);
+                var viewbox = $svg.data('viewbox');
+                return fn($e, viewbox);
             }
-            if (typeof cx !== 'undefined' && typeof cy !== 'undefined') {
-                return {
-                    coordX: cx / v.width,
-                    coordY: cy / v.height
-                };
-            }
-        } else {
             return point;
-        }
+        };
     }
+
+    // -------------------------------------------------------------------------
+    var getRectCoords = widthViewbox(function($element, viewbox) {
+        var box = $element[0].getBBox();
+        return {
+            coordX: box.x / viewbox.width,
+            coordY: box.y / viewbox.height
+        };
+    });
+
+    // -------------------------------------------------------------------------
+    var getPoint = widthViewbox(function($e, viewbox) {
+        var cx, cy;
+        if ($e.is('circle')) {
+            cx = +$e.attr('cx');
+            cy = +$e.attr('cy');
+        } else if ($e.is(':triangle')) {
+            point = triangleCenter($e);
+            point.coordX /= viewbox.width;
+            point.coordY /= viewbox.height;
+            return point;
+        } else if ($e.is('rect,line,:diamond,polygon')) {
+            var box = $e[0].getBBox();
+            cx = box.x + (box.width / 2);
+            cy = box.y + (box.height / 2);
+        }
+        if (typeof cx !== 'undefined' && typeof cy !== 'undefined') {
+            return {
+                coordX: cx / viewbox.width,
+                coordY: cy / viewbox.height
+            };
+        }
+    });
 
     // -------------------------------------------------------------------------
     function getSlicePoint($svg, point) {
@@ -331,7 +355,7 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     function rgb2hex(rgb) {
         var parts = rgb.match(/^rgb\(([^\)]+)\)$/)[1].split(/\s*,\s*/);
-        return "#" + parts.map(function(n) {
+        return '#' + parts.map(function(n) {
             return ('00' + parseInt(n, 10).toString(16)).slice(-2);
         }).join('');
     }
@@ -473,6 +497,10 @@ if (typeof jQuery === 'undefined') {
                         var point = getAveragePoint(points);
                         self.data('center', point);
                     }
+                } else if (self.is('rect')) {
+                    if (box.width > max || box.height > max) {
+                        self.addClass('large');
+                    }
                 }
             });
             var prev = [];
@@ -495,12 +523,25 @@ if (typeof jQuery === 'undefined') {
                 // and find the closest
                 try {
                     var distances = $elements.map(function() {
+                        var distance;
+                        var self = $(this);
+                        if (this instanceof SVGRectElement) {
+                            if (self.is('.large')) {
+                                if (isInsideRect(this, point)) {
+                                    distance = 0;
+                                } else {
+                                    distance = outside;
+                                }
+                                return {
+                                    distance: distance,
+                                    element: this
+                                };
+                            }
+                        }
                         if (this instanceof SVGPolygonElement) {
-                            var self = $(this);
                             if (self.is('.large')) {
                                 var center = self.data('center');
                                 var points = self.data('points');
-                                var distance;
                                 if (isPointInPoly(points, point)) {
                                     distance = 0;
                                 } else {
@@ -623,6 +664,14 @@ if (typeof jQuery === 'undefined') {
                  r2.bottom < r1.top);
     }
 
+    // -------------------------------------------------------------------------
+    function isInsideRect(rect, pt) {
+        var box = rect.getBBox();
+        var x = pt.x;
+        var y = pt.y;
+        return box.x <= x && x <= box.x + box.width &&
+               box.y <= y && y <= box.y + box.height;
+    }
     // -------------------------------------------------------------------------
     // ref: https://stackoverflow.com/a/8721483/387194
     // -------------------------------------------------------------------------
