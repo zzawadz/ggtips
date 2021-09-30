@@ -3,7 +3,7 @@ library(ggtips)
 library(dplyr)
 
 # where do you want the resulting json files to be stored
-SAVE_DIR <- system.file("barplot_tooltips", package = "ggtips")
+SAVE_DIR <- system.file(file.path("barplot_tooltips", "json_output"), package = "ggtips")
 
 singlelayers <- c("p1.rds", "p2.rds", "p3.rds")
 
@@ -11,10 +11,10 @@ lapply(seq_along(singlelayers), function(i) {
   p <- readRDS(system.file(file.path("barplot_tooltips", singlelayers[i]),
                            package = "ggtips"))
   varDict <- list(Species = "Species")
-  gt <- gridExtra::grid.arrange(p$plot)[[1]][[1]]
+  gt <- gridExtra::grid.arrange(p)[[1]][[1]]
 
   tooltips <- ggtips:::getTooltips(
-    plot = p$plot,
+    plot = p,
     varDict = varDict,
     plotScales = NULL,
     g = gt,
