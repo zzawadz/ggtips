@@ -693,8 +693,8 @@ if (typeof jQuery === 'undefined') {
     // we use the direct offset because there's an issue in safari for .offset()
     // https://stackoverflow.com/questions/54790402/jquery-offset-inside-svg-is-not-working-in-safari
     function directOffset(elem) {
-      rect = elem.getBoundingClientRect();
-      win = elem.ownerDocument.defaultView;
+      var rect = elem.getBoundingClientRect();
+      var win = elem.ownerDocument.defaultView;
       return {
         top: rect.top + win.pageYOffset,
         left: rect.left + win.pageXOffset
