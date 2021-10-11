@@ -1,3 +1,7 @@
+## 0.5.1
+### Bugs
+* fix issue when plot changes the size
+
 ## 0.5.0
 ### Features
 * allow to set min and max width of the tooltips

@@ -63,7 +63,7 @@ getDependencies <- function() {
     package = "ggtips",
     version = packageVersion("ggtips"),
     src = "ggtips",
-    script = "ggtips.js",
+    script = c("ggtips.js", "jquery.resize.js"),
     stylesheet = "ggtips.css"
   )
 }
