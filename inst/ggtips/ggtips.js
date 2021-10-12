@@ -37,7 +37,9 @@ if (typeof jQuery === 'undefined') {
     $.fn.ggtips = function(options) {
         if (arguments[0] === 'unbind') {
             return this.each(function() {
-               $(this).removeClass('ggtips-plot').proximity('unbind');
+                var $this = $(this);
+                $this.removeClass('ggtips-plot').find('svg').proximity('unbind');
+                $this.off('resize');
             });
         }
         var settings = $.extend({
@@ -55,6 +57,10 @@ if (typeof jQuery === 'undefined') {
                 return;
             }
             var container = $container[0];
+            $container.on('resize', function() {
+                $tooltip.removeClass('ggtips-show-tooltip');
+                $svg.proximity('refresh');
+            })
             var timer;
             var css = ':css(stroke:#000000)';
             var selector = ['circle',
@@ -395,17 +401,20 @@ if (typeof jQuery === 'undefined') {
     // :: inspired by https://github.com/padolsey-archive/jquery.fn
     // -------------------------------------------------------------------------
     $.fn.proximity = function(selector, options, enter, leave) {
-        if (arguments[0] == 'unbind') {
-            return this.off('mousemove.proximity').each(function() {
-                var self = $(this);
-                var scrollHandler = self.data('scrollHandler');
-                var scrollable = self.data('scrollable');
-                if (typeof scrollHandler === 'function' &&
-                    scrollable instanceof $.fn.init) {
-                    scrollable.off('scroll', scrollHandler);
-                    self.removeData(['scrollHandler', 'scrollable']);
-                }
-            });
+        switch(arguments[0]) {
+            case 'unbind':
+                return this.off('mousemove.proximity').each(function() {
+                    var self = $(this);
+                    var scrollHandler = self.data('scrollHandler');
+                    var scrollable = self.data('scrollable');
+                    if (typeof scrollHandler === 'function' &&
+                        scrollable instanceof $.fn.init) {
+                        scrollable.off('scroll', scrollHandler);
+                        self.removeData(['scrollHandler', 'scrollable']);
+                    }
+                });
+            case 'refresh':
+                return this.trigger('refresh');
         }
         if (typeof options === 'function') {
             enter = options;
@@ -442,8 +451,10 @@ if (typeof jQuery === 'undefined') {
                 }
             }
             // scroll event don't bubble, so we find scrollable elements
-            var scrollable = $this.on('mouseenter', refreshOffsets).parents().filter(isScrollable);
+            var scrollable = $this.on('mouseenter', refreshOffsets).parents()
+                                  .filter(isScrollable);
             scrollable.on('scroll', refreshOffsets);
+            $this.on('refresh', refreshOffsets);
 
             $this.data({
                 scrollHandler: refreshOffsets,
