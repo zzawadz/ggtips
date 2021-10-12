@@ -125,7 +125,7 @@ about configuring Docker and
 [Docker Machine Documentation](https://docs.docker.com/machine/get-started/)
 to learn about *docker-machine* itself.
 
-## Aknowledge
+## Acknowledge
 
 * The library uses [jQuery.resize](https://github.com/jcubic/jquery.resize) by [Jakub T. Jankiewicz](https://github.com/jcubic).
 
