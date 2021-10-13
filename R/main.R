@@ -60,6 +60,7 @@ renderWithTooltips <- function(plot,
                                width = NA,
                                height = NA,
                                customGrob = NULL,
+                               tolerance = 0.5,
                                ...) {
   if (!requireNamespace("shiny")) {
     stop("renderWithTooltips() requires Shiny")
@@ -84,7 +85,8 @@ renderWithTooltips <- function(plot,
       height = height,
       width = width,
       tooltip.width = tooltip.width,
-      point.size = point.size
+      point.size = point.size,
+      tolerance = tolerance
     )
   }, name = "func", eval.env = parent.frame(), quoted = FALSE)
 
@@ -157,7 +159,8 @@ htmlWithGivenTooltips <- function(svg,
                                   height = NA,
                                   width = NA,
                                   tooltip.width = "220px",
-                                  point.size = 10) {
+                                  point.size = 10,
+                                  tolerance = 0.05) {
   ggtips.arg <- if (length(data) == 0) {
     'unbind'
   } else {
@@ -165,7 +168,8 @@ htmlWithGivenTooltips <- function(svg,
       data = data,
       width = width,
       height = height,
-      size = point.size
+      size = point.size,
+      tolerance = tolerance
     )
   }
 
@@ -309,6 +313,7 @@ plotWithTooltips <- function(plot,
                              width = NA,
                              height = NA,
                              customGrob = NULL,
+                             tolerance = 0.05,
                              ...) {
   res <- ggtips::getSvgAndTooltipdata(
     plot = plot,
@@ -327,6 +332,7 @@ plotWithTooltips <- function(plot,
     data = res$data,
     height = height,
     width = width,
-    point.size = point.size
+    point.size = point.size,
+    tolerance = tolerance
   )
 }
