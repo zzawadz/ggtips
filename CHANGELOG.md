@@ -1,3 +1,7 @@
+## 0.6.0
+### Features
+* parametrize tooltip distance tolerance value
+
 ## 0.5.1
 ### Bugs
 * fix issue when plot changes the size

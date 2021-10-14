@@ -44,6 +44,7 @@ if (typeof jQuery === 'undefined') {
         }
         var settings = $.extend({
             size: 12,
+            tolerance: 0.05, 
             debug: false,
             data: {points: []}
         }, options);
@@ -111,10 +112,10 @@ if (typeof jQuery === 'undefined') {
                 if (settings.data.gTree) {
                     // Temporary for Pie-Charts
                     data_point = getSlicePoint($svg, point);
-                    p = findData(settings.data.gTree, data_point, 0.05);
+                    p = findData(settings.data.gTree, data_point, settings.tolerance);
                 } else {
                     data_point = getPoint($svg, point);
-                    p = findData(settings.data.points, data_point, 0.05);
+                    p = findData(settings.data.points, data_point, settings.tolerance);
                 }
                 if (settings.debug) {
                     e.target.style.stroke = '#000000';
