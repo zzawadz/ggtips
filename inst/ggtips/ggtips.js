@@ -58,7 +58,7 @@ if (typeof jQuery === 'undefined') {
             var container = $container[0];
             var timer;
             var css = ':css(stroke:#000000)';
-            var selector = [
+            var selectors = [
                 'circle',
                 'polyline:triangle:size(' + settings.size + ')',
                 'rect:size(' + settings.size + ')',
@@ -66,7 +66,7 @@ if (typeof jQuery === 'undefined') {
                 'line:size(' + settings.size + ', 0)' + css,
                 'polyline:diamond:size(' + settings.size + ')',
                 'polygon'
-            ].join(', ');
+            ];
             selectors = selectors.concat(settings.colors.map(color => {
                 return `rect:css(fill:${color.toLowerCase()})`;
             }));
