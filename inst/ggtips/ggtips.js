@@ -70,7 +70,7 @@ if (typeof jQuery === 'undefined') {
                             'line:size(' + settings.size + ')' + css,
                             'line:size(' + settings.size + ', 0)' + css,
                             'polyline:diamond:size(' + settings.size + ')',
-                            'polygon'
+                            'polygon:size(' + settings.size + ')'
                             ].join(', ');
 
             var $svg = $container.find('svg');
