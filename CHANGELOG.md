@@ -1,3 +1,7 @@
+## 0.6.1
+### Bugs
+* fix tooltips for confidence interval boxes
+
 ## 0.6.0
 ### Features
 * parametrize tooltip distance tolerance value
