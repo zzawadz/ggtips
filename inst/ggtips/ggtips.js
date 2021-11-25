@@ -42,12 +42,15 @@ if (typeof jQuery === 'undefined') {
                 $this.off('resize');
             });
         }
+
         var settings = $.extend({
             size: 12,
-            tolerance: 0.05, 
+            tolerance: 0.05,
             debug: false,
+            colors: [],
             data: {points: []}
         }, options);
+
         return this.each(function() {
             id += 1;
             var $container = $(this).addClass('ggtips-plot');
@@ -64,24 +67,31 @@ if (typeof jQuery === 'undefined') {
             })
             var timer;
             var css = ':css(stroke:#000000)';
-            var selector = ['circle',
-                            'polyline:triangle:size(' + settings.size + ')',
-                            'rect:size(' + settings.size + ')',
-                            'line:size(' + settings.size + ')' + css,
-                            'line:size(' + settings.size + ', 0)' + css,
-                            'polyline:diamond:size(' + settings.size + ')',
-                            'polygon:size(' + settings.size + ')'
-                            ].join(', ');
+            var selectors = [
+                'circle',
+                'polyline:triangle:size(' + settings.size + ')',
+                'rect:size(' + settings.size + ')',
+                'line:size(' + settings.size + ')' + css,
+                'line:size(' + settings.size + ', 0)' + css,
+                'polyline:diamond:size(' + settings.size + ')',
+                'polygon'
+            ];
+            var rects = settings.colors.map(color => {
+                return `rect:css(fill:${color.toLowerCase()})`;
+            });
+            selectors = selectors.concat(rects);
+            var selector = selectors.join(', ');
 
             var $svg = $container.find('svg');
-
-            $svg.proximity('unbind').proximity(selector, {
-                max: settings.size * 2,
-                debug: settings.debug
-            }, function(e) {
-                var $e = $(e.target);
-                var p, box;
-                var point = getPoint($svg, e.target);
+            $svg.parseViewBox();
+            // match svg elements to data from R
+            // TODO: if slow try:
+            //       * sort+binary search
+            //       * remove item when found
+            //       * split point by trelis panel
+            $svg.find(selector).each(function() {
+                var $e = $(this);
+                var point = getPoint($svg, this);
                 if (!point) {
                     return;
                 }
@@ -107,54 +117,36 @@ if (typeof jQuery === 'undefined') {
                         }
                     }
                 }
-
                 var data_point;
-                if (settings.data.gTree) {
-                    // Temporary for Pie-Charts
-                    data_point = getSlicePoint($svg, point);
-                    p = findData(settings.data.gTree, data_point, settings.tolerance);
+                if (settings.type == 'bar') {
+                    data_point = getRectCoords($svg, point);
+                    p = findData(settings.data.points, data_point, 20);
                 } else {
                     data_point = getPoint($svg, point);
-                    p = findData(settings.data.points, data_point, settings.tolerance);
+                    p = findData(settings.data.points, data_point, 0.05);
+                }
+                if (p) {
+                    $e.data('raw', p); // for debug
+                    $e.data('tooltip', p.tooltip);
+                }
+            });
+
+            $svg.proximity('unbind').proximity(selector, {
+                max: settings.size * 2,
+                debug: settings.debug
+            }, function(e) {
+                var $e = $(e.target);
+                var tooltip = $e.data('tooltip');
+                if (!tooltip) {
+                    return;
                 }
                 if (settings.debug) {
                     e.target.style.stroke = '#000000';
                 }
-                if (p) {
-                    var offset = container.getBoundingClientRect();
-                    box = e.target.getBoundingClientRect();
-                    var background;
-                    var fill = $e.css('fill');
-                    var stroke = $e.css('stroke');
-                    if (!(stroke === 'none' || stroke === '')) {
-                        background = stroke;
-                    } else if (!(fill === 'none' || fill === '')) {
-                        background = fill;
-                    } else {
-                        background = '#000';
-                    }
-
-                    var color = contrastColor(background);
-                    $tooltip.addClass('ggtips-show-tooltip');
-                    container.style.setProperty('--color', color);
-                    container.style.setProperty('--background', background);
-                    $tooltip.html(p.tooltip);
-                    var top = box.top - ($tooltip.height() / 2) +
-                        (box.height / 2) - offset.top;
-                    var tooltipWidth = $tooltip.prop('clientWidth');
-                    // 5px to compensate for ::before triangle
-                    var left = box.left + box.width + 5 - offset.left;
-                    var rAlign = left + tooltipWidth + 5 > $container.width();
-                    if (rAlign) {
-                        // 5 - triangle width
-                        left = box.left - 5 - offset.left - tooltipWidth;
-                    }
-                    $tooltip.toggleClass('ggtips-tooltip-right', rAlign);
-                    $tooltip.css({
-                        left: left,
-                        top: top
-                    });
-                }
+                $tooltip.html(tooltip).ggTooltip({
+                    element: e.target,
+                    container: container
+                });
             }, function(e) {
                 $tooltip.removeClass('ggtips-show-tooltip');
                 if (settings.debug) {
@@ -164,6 +156,48 @@ if (typeof jQuery === 'undefined') {
         });
     };
 
+    // -------------------------------------------------------------------------
+    function getSVGElementBackground(element) {
+        var $e = $(element);
+        var fill = $e.css('fill');
+        var stroke = $e.css('stroke');
+        if (!(stroke === 'none' || stroke === '')) {
+            return stroke;
+        } else if (!(fill === 'none' || fill === '')) {
+            return fill;
+        } else {
+            return '#000';
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    $.fn.ggTooltip = function(options) {
+        this.addClass('ggtips-show-tooltip');
+        // this is slow (trigger css layout)
+        var offset = options.container.getBoundingClientRect();
+        var box = options.element.getBoundingClientRect();
+        var background = getSVGElementBackground(options.element);
+        var color = contrastColor(background);
+        var style = options.container.style;
+        style.setProperty('--color', color);
+        style.setProperty('--background', background);
+        var top = box.top - (this.height() / 2) +
+                           (box.height / 2) - offset.top;
+        var tooltipWidth = this.prop('clientWidth');
+        // 5px to compensate for ::before triangle
+        var left = box.left + box.width + 5 - offset.left;
+        var $container = $(options.container);
+        var rAlign = left + tooltipWidth + 5 > $container.width();
+        if (rAlign) {
+            // 5 - triangle width
+            left = box.left - 5 - offset.left - tooltipWidth;
+        }
+        this.toggleClass('ggtips-tooltip-right', rAlign);
+        this.css({
+            left: left,
+            top: top
+        });
+    }
     // -------------------------------------------------------------------------
     function warn(message) {
         if (console && console.warn) {
@@ -192,34 +226,49 @@ if (typeof jQuery === 'undefined') {
     }
 
     // -------------------------------------------------------------------------
-    function getPoint($svg, point) {
-        if (point instanceof SVGElement || point instanceof $.fn.init) {
-            var $e = $(point);
-            var v = $svg.data('viewbox');
-            var cx, cy;
-            if ($e.is('circle')) {
-                cx = +$e.attr('cx');
-                cy = +$e.attr('cy');
-            } else if ($e.is(':triangle')) {
-                point = triangleCenter($e);
-                point.coordX /= v.width;
-                point.coordY /= v.height;
-                return point;
-            } else if ($e.is('rect,line,:diamond,polygon')) {
-                var box = $e[0].getBBox();
-                cx = box.x + (box.width / 2);
-                cy = box.y + (box.height / 2);
+    function widthViewbox(fn) {
+        return function($svg, point) {
+            if (point instanceof SVGElement || point instanceof $.fn.init) {
+                var $e = $(point);
+                var viewbox = $svg.data('viewbox');
+                return fn($e, viewbox);
             }
-            if (typeof cx !== 'undefined' && typeof cy !== 'undefined') {
-                return {
-                    coordX: cx / v.width,
-                    coordY: cy / v.height
-                };
-            }
-        } else {
             return point;
-        }
+        };
     }
+
+    // -------------------------------------------------------------------------
+    var getRectCoords = widthViewbox(function($element, viewbox) {
+        var box = $element[0].getBBox();
+        return {
+            coordX: box.x / viewbox.width,
+            coordY: box.y / viewbox.height
+        };
+    });
+
+    // -------------------------------------------------------------------------
+    var getPoint = widthViewbox(function($e, viewbox) {
+        var cx, cy;
+        if ($e.is('circle')) {
+            cx = +$e.attr('cx');
+            cy = +$e.attr('cy');
+        } else if ($e.is(':triangle')) {
+            point = triangleCenter($e);
+            point.coordX /= viewbox.width;
+            point.coordY /= viewbox.height;
+            return point;
+        } else if ($e.is('rect,line,:diamond,polygon')) {
+            var box = $e[0].getBBox();
+            cx = box.x + (box.width / 2);
+            cy = box.y + (box.height / 2);
+        }
+        if (typeof cx !== 'undefined' && typeof cy !== 'undefined') {
+            return {
+                coordX: cx / viewbox.width,
+                coordY: cy / viewbox.height
+            };
+        }
+    });
 
     // -------------------------------------------------------------------------
     function getSlicePoint($svg, point) {
@@ -338,7 +387,7 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     function rgb2hex(rgb) {
         var parts = rgb.match(/^rgb\(([^\)]+)\)$/)[1].split(/\s*,\s*/);
-        return "#" + parts.map(function(n) {
+        return '#' + parts.map(function(n) {
             return ('00' + parseInt(n, 10).toString(16)).slice(-2);
         }).join('');
     }
@@ -391,6 +440,15 @@ if (typeof jQuery === 'undefined') {
             this[0].getBoundingClientRect(),
             directOffset(this[0])
         );
+    };
+    // -------------------------------------------------------------------------
+    $.fn.parseViewBox = function() {
+        return this.each(function() {
+            var $svg = $(this);
+            if (!$svg.data('viewbox')) {
+                $svg.data('viewbox', viewBox(this));
+            }
+        });
     };
     // -------------------------------------------------------------------------
     // :: Proximity Plugin
@@ -468,8 +526,7 @@ if (typeof jQuery === 'undefined') {
                 $svg = $this.find('svg');
             }
             var svg = $svg[0];
-            // precalculate and cache constant data
-            $svg.data('viewbox', viewBox(svg));
+            $svg.parseViewBox();
             $elements.each(function() {
                 var self = $(this);
                 var box = this.getBBox();
@@ -484,6 +541,10 @@ if (typeof jQuery === 'undefined') {
                         self.data('points', points);
                         var point = getAveragePoint(points);
                         self.data('center', point);
+                    }
+                } else if (self.is('rect')) {
+                    if (box.width > max || box.height > max) {
+                        self.addClass('large');
                     }
                 }
             });
@@ -507,6 +568,21 @@ if (typeof jQuery === 'undefined') {
                 // and find the closest
                 try {
                     var distances = $elements.map(function() {
+                        var distance;
+                        var self = $(this);
+                        if (this instanceof SVGRectElement) {
+                            if (self.is('.large')) {
+                                if (isInsideRect(this, point)) {
+                                    distance = 0;
+                                } else {
+                                    distance = outside;
+                                }
+                                return {
+                                    distance: distance,
+                                    element: this
+                                };
+                            }
+                        }
                         if (this instanceof SVGPolygonElement) {
                             var self = $(this);
                             if (self.is('.large')) {
@@ -635,6 +711,14 @@ if (typeof jQuery === 'undefined') {
                  r2.bottom < r1.top);
     }
 
+    // -------------------------------------------------------------------------
+    function isInsideRect(rect, pt) {
+        var box = rect.getBBox();
+        var x = pt.x;
+        var y = pt.y;
+        return box.x <= x && x <= box.x + box.width &&
+               box.y <= y && y <= box.y + box.height;
+    }
     // -------------------------------------------------------------------------
     // ref: https://stackoverflow.com/a/8721483/387194
     // -------------------------------------------------------------------------
