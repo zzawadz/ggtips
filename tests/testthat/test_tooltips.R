@@ -8,18 +8,18 @@ prepareTestPlot <- function(df, xLimit = NULL) {
   testPlot <- ggplot(
     data = df,
     mapping = aes(x = Sepal.Width, y = Sepal.Length)
-  ) + 
+  ) +
     geom_point(mapping = aes(colour = Petal.Length)) +
     facet_wrap(~ Species, scales = "fixed")
-  
+
   if (!is.null(xLimit)) {
-    testPlot <- testPlot + 
+    testPlot <- testPlot +
       coord_cartesian(
         xlim = c(0, xLimit),
         expand = TRUE
       )
   }
-  
+
   list(
     plot = testPlot,
     grob = ggplot_build(testPlot)
@@ -51,11 +51,11 @@ test_that("getTooltips()", {
   expect_length(points, 1L)
   tt <- points[[1]]
   expect_is(tt, "data.frame")
-  expect_named(tt, c("tooltip", "coordX", "coordY"))
+  expect_named(tt, c("tooltip", "x", "y"))
   expect_equal(nrow(tt), nrow(iris))
-  
+
   gt <- gridExtra::grid.arrange(limitedPlot$plot)[[1]][[1]]
-  
+
   tooltips <- ggtips:::getTooltips(
     plot = limitedPlot$plot,
     varDict = varDict,
@@ -71,6 +71,6 @@ test_that("getTooltips()", {
   expect_length(points, 1L)
   tt <- points[[1]]
   expect_is(tt, "data.frame")
-  expect_named(tt, c("tooltip", "coordX", "coordY"))
+  expect_named(tt, c("tooltip", "x", "y"))
   expect_equal(nrow(tt), 94) # Number of points within range with xlim = 3
 })

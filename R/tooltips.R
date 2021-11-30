@@ -29,7 +29,7 @@
 #' and layers.
 #' Each element of the list is a data frame with HTML-formatted tooltip
 #' contents (column `tooltip`) and coordinates relative to the size of
-#' the image (`coordX` and `coordY`).
+#' the image (`x` and `y`).
 #'
 #' @param plot A \link{ggplot} object.
 #' @param g A gtable object compiled from the plot (see \link{arrangeGrob}).
@@ -89,6 +89,7 @@ getTooltips <- function(plot,
         # Geometry not supported
         return(NULL)
       }
+
       tooltipContents <- tooltipDataToText(df)
       coords <- lapply(layoutNames, function(layoutName) {
         getGeomCoordsForGrob(
@@ -104,16 +105,22 @@ getTooltips <- function(plot,
       if (is.null(coords)) {
         NULL
       } else {
-        coords$coordX <- coords$coordX / plotWidth
-        coords$coordY <- 1 - coords$coordY / plotHeight
-        cbind(tooltip = tooltipContents, coords)
+        coords$x <- coords$x / plotWidth
+        coords$y <- 1 - coords$y / plotHeight
+        out <- cbind(tooltip = tooltipContents, coords)
       }
+      if (geom == "rect") {
+        out <- list(data = out)
+        out$colors <- getBarColors(plot)
+      }
+      out
     },
     plot$layers,
     tooltipData,
     geomNames,
     SIMPLIFY = FALSE
   )
+
   # Group tooltip tables by geometries
   res <- sapply(
     uniqueGeomNames,
@@ -129,6 +136,8 @@ getTooltips <- function(plot,
     attr(res, "rowHeights") <- rowHeights
   }
 
+  # rename rect to bars
+  names(res)[which(names(res) == "rect")] <- "bars"
   res
 }
 
