@@ -7,6 +7,14 @@
   display: none;
   pointer-events: none;
   white-space: nowrap;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* in case browser doesn't support css variables */
+  min-width: 220px;
+  max-width: 420px;
+  min-width: var(--ggtips-min-width, 220px);
+  max-width: var(--ggtips-max-width, 420px);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
 }
 .ggtips-tooltip ul {
   background: var(--background, black);
@@ -16,36 +24,29 @@
   padding: 5px;
   line-height: 1.1em;
   border-radius: 5px;
+  position: relative;
+  z-index: 100;
 }
 .ggtips-tooltip.ggtips-show-tooltip {
   display: block;
-  white-space: pre-wrap;
-  word-break: break-word;
-  /* in case browser doesn't support css variables */
-  min-width: 220px;
-  max-width: 420px;
-  min-width: var(--ggtips-min-width, 220px);
-  max-width: var(--ggtips-max-width, 420px);
 }
 .ggtips-tooltip::before, .ggtips-tooltip::after {
-  border: 5px solid var(--background, black);
-  width: 0;
-  height: 0;
+  width: 10px;
+  height: 10px;
+  margin-top: -3px; /* half height * 0.6 scale  = (10 / 2) * 0.6 */
+  background: var(--background, black);
   position: absolute;
-  border-top-color: transparent;
-  border-bottom-color: transparent;
   top: 50%;
-  transform: translate(0, -50%);
+  transform: scaleY(0.6) rotate(45deg) translateY(-50%);
+  transform-origin: 0 0;
 }
 .ggtips-tooltip:not(.ggtips-tooltip-right)::before {
   content: "";
   display: block;
-  border-left-color: transparent;
-  left: -10px;
+  left: -4px;
 }
 .ggtips-tooltip.ggtips-tooltip-right::after {
   content: "";
   display: block;
-  border-right-color: transparent;
-  right: -10px;
+  right: -7px;
 }
