@@ -57,13 +57,14 @@ if (typeof jQuery === 'undefined') {
             size: 12,
             tolerance: 0.05,
             follow: false,
-            debug: false,
-            data: {
+            debug: false
+        }, options, {
+            data: $.extend({
                 points: {},
                 rect: {},
                 polar_rect: {}
-            }
-        }, options);
+            }, options && options.data)
+        });
 
         var data = settings.data;
 
@@ -77,6 +78,7 @@ if (typeof jQuery === 'undefined') {
                 return;
             }
             var container = $container[0];
+            var $svg = $container.find('svg');
             $container.on('resize', function() {
                 $tooltip.removeClass('ggtips-show-tooltip');
                 $svg.proximity('refresh');
@@ -92,16 +94,14 @@ if (typeof jQuery === 'undefined') {
                 'polyline:diamond:size(' + settings.size + ')',
                 'polygon'
             ];
-            if (settings.data.bars) {
-                var rects = settings.data.bars.colors.map(color => {
+            if (data.rect.data) {
+                var rects = settings.data.rect.colors.map(color => {
                     return `rect:css(fill:${color.toLowerCase()})`;
                 });
                 var barPlotSelector = rects.join(',');
                 selectors = selectors.concat(rects);
             }
             var selector = selectors.join(',');
-
-            var $svg = $container.find('svg');
             $svg.parseViewBox();
             // match svg elements to data from R
             // TODO: if slow try:
@@ -122,7 +122,7 @@ if (typeof jQuery === 'undefined') {
                     // TODO: add pie charts
                 }
                 // try points, that can also be rect or polygon
-                if (!p && 'points' in settings.data) {
+                if (!p && data.points.data) {
                     point = getPoint($svg, $e);
                     p = findData(data.points.data, point, tolerance('points'));
                 }
