@@ -26,7 +26,17 @@ fluidPage(
       )
     ),
     mainPanel = mainPanel(
-      uiOutput(outputId = "myPlot") # container for the plot
+      tabsetPanel(
+        tabPanel(
+          title = "Points",
+          uiOutput(outputId = "myPlot") # container for the plot
+        ),
+        tabPanel(
+          title = "Bars",
+          uiOutput(outputId = "myBarplot")
+        )
+      )
+
     )
   )
 )
