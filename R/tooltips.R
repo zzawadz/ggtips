@@ -107,10 +107,11 @@ getTooltips <- function(plot,
       } else {
         coords$x <- coords$x / plotWidth
         coords$y <- 1 - coords$y / plotHeight
-        out <- cbind(tooltip = tooltipContents, coords)
+        out <- list(
+          data = cbind(tooltip = tooltipContents, coords)
+        )
       }
       if (geom == "rect") {
-        out <- list(data = out)
         out$colors <- getBarColors(plot)
       }
       out
@@ -131,13 +132,14 @@ getTooltips <- function(plot,
     USE.NAMES = TRUE
   )
 
+  # flatten the structure
+  res <- lapply(res, function(layer) unlist(layer, recursive = FALSE))
+
   if (addAttributes) {
     attr(res, "colWidths") <- colWidths
     attr(res, "rowHeights") <- rowHeights
   }
 
-  # rename rect to bars
-  names(res)[which(names(res) == "rect")] <- "bars"
   res
 }
 
