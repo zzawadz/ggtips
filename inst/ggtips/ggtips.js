@@ -44,6 +44,9 @@ if (typeof jQuery === 'undefined') {
         }
 
         function tolerance(type) {
+            if (typeof data[type].tolerance === 'number') {
+                return data[type].tolerance;
+            }
             if (typeof settings.tolerance === 'number') {
                 return settings.tolerance;
             }
@@ -56,11 +59,13 @@ if (typeof jQuery === 'undefined') {
             follow: false,
             debug: false,
             data: {
-                points: [],
-                bars: [],
-                pies: []
+                points: {},
+                rect: {},
+                polar_rect: {}
             }
         }, options);
+
+        var data = settings.data;
 
         return this.each(function() {
             id += 1;
@@ -109,16 +114,17 @@ if (typeof jQuery === 'undefined') {
                     return;
                 }
                 var point, p;
-                if (barPlotSelector && $e.is(barPlotSelector) && !isBackgroundRect($e)) { // bar plot
-                    console.log($e[0]);
+                if (data.rect.data && barPlotSelector &&
+                    $e.is(barPlotSelector) && !isBackgroundRect($e)) { // bar plot
                     point = getRectCoords($svg, $e);
-                    p = findData(settings.data.bars.data, point, tolerance('bars'));
+                    p = findData(data.rect.data, point, tolerance('rect'));
                 } else if ($e.is('polygon')) { // pie chart
                     // TODO: add pie charts
                 }
-                if (!p && 'points' in settings.data) { // try points, that can be rect or polygon
+                // try points, that can also be rect or polygon
+                if (!p && 'points' in settings.data) {
                     point = getPoint($svg, $e);
-                    p = findData(settings.data.points, point, tolerance('points'));
+                    p = findData(data.points.data, point, tolerance('points'));
                 }
                 if (p) {
                     $e.data('raw', p); // for debug
@@ -427,7 +433,6 @@ if (typeof jQuery === 'undefined') {
         }
         function find(p) {
             var d = distance(point, p);
-            console.log({d, point, p});
             if (!min || min > d) {
                 candidate = p;
                 min = d;
@@ -437,6 +442,7 @@ if (typeof jQuery === 'undefined') {
         var candidate;
         for (var i = 0; i < points_array.length; ++i) {
             var item = points_array[i];
+            // TODO: remove the nested array
             if (item instanceof Array) {
                 for (var j = 0; j < item.length; j++) {
                     find(item[j]);
@@ -445,7 +451,6 @@ if (typeof jQuery === 'undefined') {
                 find(item);
             }
         }
-        console.log({min, tolerance});
         if (min < tolerance) {
             return candidate;
         }
@@ -574,7 +579,6 @@ if (typeof jQuery === 'undefined') {
             var $svg = $(this);
             if (!$svg.data('viewbox')) {
                 var vb = viewBox(this);
-                console.log({vb});
                 $svg.data('viewbox', vb);
             }
         });
