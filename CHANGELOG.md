@@ -1,3 +1,7 @@
+## 0.7.0
+### Features
+* add support for bar plots
+
 ## 0.6.1
 ### Bugs
 * fix tooltips for confidence interval boxes
