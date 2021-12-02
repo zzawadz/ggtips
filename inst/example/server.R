@@ -7,6 +7,12 @@ plotIris <- function(x_aes, y_aes) {
     theme(legend.position = "bottom")
 }
 
+plotIrisBarplot <- function() {
+  ggplot(data = iris, mapping = aes(x = Species)) +
+    geom_bar(mapping = aes(fill = Species)) +
+    theme(legend.position = "bottom")
+}
+
 customContentFunction <- function(x) {
   species <- as.character(x$Species)
   symbol <- switch(
@@ -37,5 +43,10 @@ function(input, output) {
     width = 8,
     height = 5,
     point.size = 20
+  )
+
+  output[["myBarplot"]] <- renderWithTooltips(
+    plot = plotIrisBarplot(),
+    varDict = list(Species = "Species")
   )
 }
