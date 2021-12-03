@@ -60,7 +60,7 @@ renderWithTooltips <- function(plot,
                                width = NA,
                                height = NA,
                                customGrob = NULL,
-                               tolerance = 0.5,
+                               tolerance = 0.05,
                                follow = FALSE,
                                ...) {
   if (!requireNamespace("shiny")) {
