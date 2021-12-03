@@ -670,7 +670,7 @@ if (typeof jQuery === 'undefined') {
                 // big polygons are part of pie charts
                 if (self.is('polygon')) {
                     if (box.width > max || box.height > max) {
-                        self.addClass('large');
+                        self.addClass('ggtips-large');
                         var points = getPoints(self);
                         self.data('points', points);
                         var point = getAveragePoint(points);
@@ -708,7 +708,7 @@ if (typeof jQuery === 'undefined') {
                         var distance;
                         var self = $(this);
                         if (this instanceof SVGRectElement) {
-                            if (self.is('.large')) {
+                            if (self.is('.ggtips-large')) {
                                 if (isInsideRect(this, point)) {
                                     distance = 0;
                                 } else {
@@ -722,7 +722,7 @@ if (typeof jQuery === 'undefined') {
                         }
                         if (this instanceof SVGPolygonElement) {
                             var self = $(this);
-                            if (self.is('.large')) {
+                            if (self.is('.ggtips-large')) {
                                 var center = self.data('center');
                                 var points = self.data('points');
                                 var distance;
