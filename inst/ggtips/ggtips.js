@@ -81,7 +81,6 @@ if (typeof jQuery === 'undefined') {
             var $svg = $container.find('svg');
             $container.on('resize', function() {
                 $tooltip.removeClass('ggtips-show-tooltip');
-                $svg.proximity('refresh');
             })
             var timer;
             var css = ':css(stroke:#000000)';
@@ -593,18 +592,20 @@ if (typeof jQuery === 'undefined') {
     // :: inspired by https://github.com/padolsey-archive/jquery.fn
     // -------------------------------------------------------------------------
     $.fn.proximity = function(selector, options, enter, leave) {
-        if (arguments[0] == 'unbind') {
-            return this.off('mousemove.proximity').each(function() {
-                var self = $(this);
-                var scrollHandler = self.data('scrollHandler');
-                var scrollable = self.data('scrollable');
-                if (typeof scrollHandler === 'function' &&
-                    scrollable instanceof $.fn.init) {
-                    scrollable.off('scroll', scrollHandler);
-                    self.removeData(['scrollHandler', 'scrollable']);
-                }
-            });
+        switch(arguments[0]) {
+            case 'unbind':
+                return this.off('mousemove.proximity').each(function() {
+                    var self = $(this);
+                    var scrollHandler = self.data('scrollHandler');
+                    var scrollable = self.data('scrollable');
+                    if (typeof scrollHandler === 'function' &&
+                        scrollable instanceof $.fn.init) {
+                        scrollable.off('scroll', scrollHandler);
+                        self.removeData(['scrollHandler', 'scrollable']);
+                    }
+                });
         }
+
         if (typeof options === 'function') {
             enter = options;
             leave = enter;
@@ -631,27 +632,6 @@ if (typeof jQuery === 'undefined') {
                 return !!$e.data('tooltip');
             });
 
-            var old_dimension = $this.dimension();
-
-            // recalculate offset of svg change position
-            function refreshOffsets() {
-                var dimension = $this.dimension();
-                if (dimChanged(dimension, old_dimension)) {
-                    old_dimension = dimension;
-                    $elements.each(function() {
-                        var $node = $(this);
-                        $node.data('offset', directOffset(this));
-                    });
-                }
-            }
-            // scroll event don't bubble, so we find scrollable elements
-            var scrollable = $this.on('mouseenter', refreshOffsets).parents().filter(isScrollable);
-            scrollable.on('scroll', refreshOffsets);
-
-            $this.data({
-                scrollHandler: refreshOffsets,
-                scrollable: scrollable
-            });
             var $svg;
             if ($this.is('svg')) {
                 $svg = $this;
