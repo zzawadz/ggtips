@@ -8,8 +8,11 @@ plotIris <- function(x_aes, y_aes) {
 }
 
 plotIrisBarplot <- function() {
-  ggplot(data = iris, mapping = aes(x = Species)) +
-    geom_bar(mapping = aes(fill = Species)) +
+  ggplot(
+    data = aggregate(Petal.Length ~ Species, data = iris, mean),
+    aes(x = Species, y = Petal.Length, fill = Species)
+  ) +
+    geom_bar(stat = "identity") +
     theme(legend.position = "bottom")
 }
 
@@ -42,11 +45,11 @@ function(input, output) {
     callback = customContentFunction,
     width = 8,
     height = 5,
-    point.size = 20
+    point.size = 20,
   )
 
   output[["myBarplot"]] <- renderWithTooltips(
     plot = plotIrisBarplot(),
-    varDict = list(Species = "Species")
+    varDict = list(Petal.Length = "Petal Length", Species = "Species")
   )
 }
