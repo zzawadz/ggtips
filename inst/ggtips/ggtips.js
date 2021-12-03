@@ -623,13 +623,12 @@ if (typeof jQuery === 'undefined') {
         var hasEnter = typeof enter === 'function';
 
         return this.each(function() {
-            var $this = $(this)
+            var $this = $(this);
+            // filter out data that don't was not matched
+            // example legend objects or background rect
             var $elements = $this.find(selector).filter(function() {
                 var $e = $(this);
-                if ($e.is('rect') && isBackgroundRect($e)) {
-                    return false;
-                }
-                return true;
+                return !!$e.data('tooltip');
             });
 
             var old_dimension = $this.dimension();
@@ -677,7 +676,7 @@ if (typeof jQuery === 'undefined') {
                         self.data('center', point);
                     }
                 } else if (self.is('rect')) {
-                    if (box.width > max || box.height > max) {
+                    if (!(box.width < max || box.height < max)) {
                         self.addClass('ggtips-large');
                     }
                     if (!isBackgroundRect(self)) {
@@ -738,7 +737,7 @@ if (typeof jQuery === 'undefined') {
                             }
                         }
                         return {
-                            distance: boxDistance(this, e.pageX, e.pageY),
+                            distance: boxDistance(this, point.x, point.y),
                             element: this
                         };
                     }).get();
@@ -924,7 +923,8 @@ if (typeof jQuery === 'undefined') {
 
     // -------------------------------------------------------------------------
     // we use the direct offset because there's an issue in safari for .offset()
-    // https://stackoverflow.com/questions/54790402/jquery-offset-inside-svg-is-not-working-in-safari
+    // ref: https://stackoverflow.com/a/54792141
+    // -------------------------------------------------------------------------
     function directOffset(elem) {
       rect = elem.getBoundingClientRect();
       win = elem.ownerDocument.defaultView;
@@ -933,42 +933,30 @@ if (typeof jQuery === 'undefined') {
         left: rect.left + win.pageXOffset
       };
     }
-
     // -------------------------------------------------------------------------
     function boxDistance(el, x, y) {
-        el = $(el);
-        // Calculate the distance from the closest edge of the element
-        // to the cursor's current position
-
-        var left, right, top, bottom, offset,
-            cX, cY, dX, dY,
-            distance = 0;
-
-        offset = el.data('offset');
-        left = offset.left;
-        top = offset.top;
-        var box = el.data('box');
+        var $el = $(el);
+        //var offset = $el.data('offset');
+        var box = $el.data('box');
         if (!box) {
             throw new Error("ggtips: Invlaid state. If you don't use tooltips " +
                             "please try to call ggtips('destroy') to remove the evennts");
         }
-        var width = box.width;
-        var height = box.height;
-        right = left + width;
-        bottom = top + height;
+        var left = box.x;
+        var top = box.y;
+        var right = left + box.width;
+        var bottom = top + box.height;
 
         // inside, important fo geometries bigger than points
         if (x > left && x < right && y > top && y < bottom) {
             return 0;
         }
-
-        cX = x > right ? right : x > left ? x : left;
-        cY = y > bottom ? bottom : y > top ? y : top;
-
-        dX = Math.abs( cX - x );
-        dY = Math.abs( cY - y );
-
-        return Math.sqrt( dX * dX + dY * dY );
+        // Calculate the distance from the closest edge of the element
+        // to the cursor's current position
+        // ref: https://stackoverflow.com/a/18157551
+        var dx = Math.max(left - x, 0, x - right);
+        var dy = Math.max(top - y, 0, y - bottom);
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     // -------------------------------------------------------------------------
