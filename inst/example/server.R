@@ -7,13 +7,11 @@ plotIris <- function(x_aes, y_aes) {
     theme(legend.position = "bottom")
 }
 
-plotIrisBarplot <- function() {
+plotMtcarsBarplot <- function() {
   ggplot(
-    data = aggregate(Petal.Length ~ Species, data = iris, mean),
-    aes(x = Species, y = Petal.Length, fill = Species)
-  ) +
-    geom_bar(stat = "identity") +
-    theme(legend.position = "bottom")
+    data = d_fac, aes(x = am, fill = gear)
+  ) + geom_bar() +
+    facet_wrap("cyl")
 }
 
 customContentFunction <- function(x) {
@@ -49,7 +47,7 @@ function(input, output) {
   )
 
   output[["myBarplot"]] <- renderWithTooltips(
-    plot = plotIrisBarplot(),
-    varDict = list(Petal.Length = "Petal Length", Species = "Species")
+    plot = plotMtcarsBarplot(),
+    varDict <- list(cyl = "Cylinder", gear = "Gear", am = "Auto / Manual", count = "Value")
   )
 }

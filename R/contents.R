@@ -90,6 +90,25 @@ getLayerGeom <- function(layer) {
 #' Unmap factors
 #'
 unmapFactors <- function(df, origin) {
+  if (nrow(df) != nrow(origin)) {
+    factors <- Filter(
+      function(name) { is.factor(origin[[name]]) },
+      names(origin)
+    )
+    for (f in factors) {
+      if (f %in% names(df)) {
+        orig_lvl <- levels(origin[[f]])
+        df_lvl <- unique(df[[f]])
+
+        for (r in seq_len(nrow(df))) {
+          curr_value <- df[r, f]
+          df[r, f] <- orig_lvl[which(df_lvl == curr_value)]
+        }
+      }
+    }
+    return(df)
+  }
+
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
   # Include only matching rows
