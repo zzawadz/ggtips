@@ -1,0 +1,18 @@
+version: '3'
+services:
+  shiny:
+    build: .
+    command: R -e "ggtips:::shinyTest()"
+    ports:
+      - "8080:3838"
+
+  cypress:
+    depends_on:
+      - shiny
+    image: cypress/base
+    command: npx cypress run
+    environment:
+      - CYPRESS_baseUrl=http://shiny:3838
+    working_dir: /e2e
+    volumes:
+      - ./e2e:/e2e

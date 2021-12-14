@@ -72,3 +72,13 @@ getDependencies <- function() {
 isGgplot2 <- function() {
   packageVersion("ggplot2")$major == 2L
 }
+
+#' Run shiny app for E2E tests
+shinyTest <- function(port = 3838L, ...) {
+  shiny::runApp(
+    appDir = system.file("shiny", package = "ggtips"),
+    port = port,
+    host = "0.0.0.0",
+    ...
+  )
+}
