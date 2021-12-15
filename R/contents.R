@@ -105,8 +105,9 @@ unmapFactors <- function(df, origin, plot) {
         map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
         if (length(map_found) > 0) {
           found_idx <- which(names(mapping) == map_found)
-          colors <- q[["plot"]][["scales"]][["scales"]][[found_idx]][["palette.cache"]]
-          values <- q[["plot"]][["scales"]][["scales"]][[found_idx]][["range"]][["range"]]
+          plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
+          colors <- plot_scales[["palette.cache"]]
+          values <- plot_scales[["range"]][["range"]]
 
           df[[f]] <- sapply(df[[f]], function(x) values[which(colors == x)])
         }
