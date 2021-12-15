@@ -89,20 +89,26 @@ getLayerGeom <- function(layer) {
 
 #' Unmap factors
 #'
-unmapFactors <- function(df, origin) {
+unmapFactors <- function(df, origin, plot) {
   if (nrow(df) != nrow(origin)) {
+    q <- ggplot_build(plot)
+    mapping <- q[["plot"]][["mapping"]]
+    explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
+
     factors <- Filter(
       function(name) { is.factor(origin[[name]]) },
       names(origin)
     )
     for (f in factors) {
       if (f %in% names(df)) {
-        orig_lvl <- levels(origin[[f]])
-        df_lvl <- unique(df[[f]])
+        # find mapping
+        map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
+        if (length(map_found) > 0) {
+          found_idx <- which(names(mapping) == map_found)
+          colors <- q[["plot"]][["scales"]][["scales"]][[found_idx]][["palette.cache"]]
+          values <- q[["plot"]][["scales"]][["scales"]][[found_idx]][["range"]][["range"]]
 
-        for (r in seq_len(nrow(df))) {
-          curr_value <- df[r, f]
-          df[r, f] <- orig_lvl[which(df_lvl == curr_value)]
+          df[[f]] <- sapply(df[[f]], function(x) values[which(colors == x)])
         }
       }
     }
@@ -146,7 +152,7 @@ unmapAes <- function(data, mapping, plot) {
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
       })
-      unmapFactors(df, origin = plotData)
+      unmapFactors(df, origin = plotData, plot = plot)
     },
     data,
     mapping,

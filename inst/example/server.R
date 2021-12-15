@@ -8,6 +8,8 @@ plotIris <- function(x_aes, y_aes) {
 }
 
 plotMtcarsBarplot <- function() {
+  d_fac <- mtcars
+  d_fac[, c("am", "gear")] <- lapply(d_fac[, c("am", "gear")], as.factor)
   ggplot(
     data = d_fac, aes(x = am, fill = gear)
   ) + geom_bar() +
