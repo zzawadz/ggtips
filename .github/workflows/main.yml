@@ -89,11 +89,13 @@ jobs:
       - name: Test
         run: make test
       - name: Archive Cypress Screenshots
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: cypress-screenshots
           path: ${{ github.workspace }}/e2e/cypress/screenshots/*
       - name: Archive Cypress Videos
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: cypress-videos
