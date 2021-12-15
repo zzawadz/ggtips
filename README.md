@@ -2,7 +2,7 @@
 
 # ggtips - interactive tooltips for ggplots
 
-![Build Status](https://github.com/Roche/ggtips/actions/workflows/main.yml/badge.svg)
+[![Build and Test](https://github.com/Roche/ggtips/actions/workflows/main.yml/badge.svg)](https://github.com/Roche/ggtips/actions/workflows/main.yml)
 
 R package that provides a set of functions to enhance your ggplots with
 eye-pleasing tooltips easily, and render them in your Shiny apps.
