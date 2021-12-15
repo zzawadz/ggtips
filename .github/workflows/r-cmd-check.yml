@@ -1,14 +1,7 @@
 # For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
 # https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
 on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
+  push
 
 name: R-CMD-check
 
@@ -87,21 +80,4 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
-  E2E:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: build docker
-        run: make build
-      - name: Test
-        run: make test
-      - name: Archive Cypress Screenshots
-        uses: actions/upload-artifact@v2
-        with:
-          name: cypress-screenshots
-          path: ${{ github.workspace }}/e2e/cypress/screenshots/*
-      - name: Archive Cypress Videos
-        uses: actions/upload-artifact@v2
-        with:
-          name: cypress-videos
-          path: ${{ github.workspace }}/e2e/cypress/videos/*
+

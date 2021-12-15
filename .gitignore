@@ -4,3 +4,6 @@
 .RData
 .Ruserdata
 *~
+e2e/cypress/results
+e2e/cypress/videos
+e2e/cypress/screenshots

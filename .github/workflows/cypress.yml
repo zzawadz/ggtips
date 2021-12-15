@@ -1,0 +1,31 @@
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+name: E2E
+
+jobs:
+  E2E:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build docker
+        run: make build
+      - name: Test
+        run: make test
+      - name: Archive Cypress Screenshots
+        uses: actions/upload-artifact@v2
+        with:
+          name: cypress-screenshots
+          path: ${{ github.workspace }}/e2e/cypress/screenshots/*
+      - name: Archive Cypress Videos
+        uses: actions/upload-artifact@v2
+        with:
+          name: cypress-videos
+          path: ${{ github.workspace }}/e2e/cypress/videos/*
