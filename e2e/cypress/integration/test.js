@@ -3,6 +3,7 @@
 describe('StartTest', () => {
     beforeEach(() => {
         cy.visit('http://shiny:3838');
+        cy.wait(100);
     });
     it('should have text HELLO', () => {
         cy.contains('HELLO');
