@@ -60,7 +60,8 @@ renderWithTooltips <- function(plot,
                                width = NA,
                                height = NA,
                                customGrob = NULL,
-                               tolerance = 0.5,
+                               tolerance = 0.05,
+                               follow = FALSE,
                                ...) {
   if (!requireNamespace("shiny")) {
     stop("renderWithTooltips() requires Shiny")
@@ -86,6 +87,7 @@ renderWithTooltips <- function(plot,
       width = width,
       tooltip.width = tooltip.width,
       point.size = point.size,
+      follow = follow,
       tolerance = tolerance
     )
   }, name = "func", eval.env = parent.frame(), quoted = FALSE)
@@ -159,6 +161,7 @@ htmlWithGivenTooltips <- function(svg,
                                   height = NA,
                                   width = NA,
                                   tooltip.width = "220px",
+                                  follow = FALSE,
                                   point.size = 10,
                                   tolerance = 0.05) {
   ggtips.arg <- if (length(data) == 0) {
@@ -169,6 +172,7 @@ htmlWithGivenTooltips <- function(svg,
       width = width,
       height = height,
       size = point.size,
+      follow = follow,
       tolerance = tolerance
     )
   }
@@ -180,8 +184,6 @@ htmlWithGivenTooltips <- function(svg,
     "$('[data-id=\"%s\"]').closest('.shiny-html-output').ggtips(%s);",
     "</script>"
   )
-
-
 
   shiny::tagList(
     shiny::HTML(svg),
@@ -313,6 +315,7 @@ plotWithTooltips <- function(plot,
                              width = NA,
                              height = NA,
                              customGrob = NULL,
+                             follow = FALSE,
                              tolerance = 0.05,
                              ...) {
   res <- ggtips::getSvgAndTooltipdata(
@@ -333,6 +336,7 @@ plotWithTooltips <- function(plot,
     height = height,
     width = width,
     point.size = point.size,
+    follow = follow,
     tolerance = tolerance
   )
 }

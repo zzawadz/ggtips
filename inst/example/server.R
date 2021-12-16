@@ -7,6 +7,16 @@ plotIris <- function(x_aes, y_aes) {
     theme(legend.position = "bottom")
 }
 
+plotMtcarsBarplot <- function() {
+  d_fac <- mtcars
+  factor_cols <- c("am", "gear")
+  d_fac[, factor_cols] <- lapply(d_fac[, factor_cols], as.factor)
+  ggplot(
+    data = d_fac, aes(x = am, fill = gear)
+  ) + geom_bar() +
+    facet_wrap("cyl")
+}
+
 customContentFunction <- function(x) {
   species <- as.character(x$Species)
   symbol <- switch(
@@ -36,6 +46,11 @@ function(input, output) {
     callback = customContentFunction,
     width = 8,
     height = 5,
-    point.size = 20
+    point.size = 20,
+  )
+
+  output[["myBarplot"]] <- renderWithTooltips(
+    plot = plotMtcarsBarplot(),
+    varDict <- list(cyl = "Cylinder", gear = "Gear", am = "Auto / Manual", count = "Value")
   )
 }

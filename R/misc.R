@@ -72,3 +72,28 @@ getDependencies <- function() {
 isGgplot2 <- function() {
   packageVersion("ggplot2")$major == 2L
 }
+
+
+#' Gets fill colors of bars if plot is a barplot
+#'
+#' @param p ggplot object
+#'
+#' @return vector of fill colors or NULL if no \code{rect} geom in the plot
+getBarColors <- function(p) {
+  if (!"ggplot" %in% class(p)) {
+    warning("p argument should ba a valid ggplot object")
+    return(NULL)
+  }
+
+  gt <- gridExtra::grid.arrange(p)[[1]][[1]]
+  panel_idx <- grep(pattern = "panel", x = gt$grobs)
+
+  fills <- lapply(panel_idx, function(p) {
+    grob_children <- gt$grobs[[p]]$children
+    rect_idx <- grep(pattern = "\\.rect\\.", x = names(grob_children))
+    if (length(rect_idx) == 0)
+      return()
+    grob_children[[rect_idx]]$gp$fill
+  })
+  unlist(fills)
+}

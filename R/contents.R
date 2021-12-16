@@ -57,11 +57,11 @@ getLayerAesthetics <- function(plot) {
     } else {
       ggplot2::aes()
     }
-    
+
     if (length(layer$mapping) > 0) {
       layerMapping[names(layer$mapping)] <- layer$mapping
     }
-    
+
     lapply(layerMapping, parseMapping)
   })
 }
@@ -79,7 +79,9 @@ getLayerGeom <- function(layer) {
     #TODO complete the list
     # GeomLine = "polyline",
     # GeomPath = "polyline",
-    GeomPoint = "points"
+    GeomPoint = "points",
+    GeomBar = "rect",
+    GeomCol = "rect"
   )
   classes <- class(layer$geom)
   unique(unlist(geomDict[classes]))
@@ -87,7 +89,33 @@ getLayerGeom <- function(layer) {
 
 #' Unmap factors
 #'
-unmapFactors <- function(df, origin) {
+unmapFactors <- function(df, origin, plot) {
+  if (nrow(df) != nrow(origin)) {
+    q <- ggplot_build(plot)
+    mapping <- q[["plot"]][["mapping"]]
+    explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
+
+    factors <- Filter(
+      function(name) { is.factor(origin[[name]]) },
+      names(origin)
+    )
+    for (f in factors) {
+      if (f %in% names(df)) {
+        # find mapping
+        map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
+        if (length(map_found) > 0) {
+          found_idx <- which(names(mapping) == map_found)
+          plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
+          colors <- plot_scales[["palette.cache"]]
+          values <- plot_scales[["range"]][["range"]]
+
+          df[[f]] <- sapply(df[[f]], function(x) values[which(colors == x)])
+        }
+      }
+    }
+    return(df)
+  }
+
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
   # Include only matching rows
@@ -125,7 +153,7 @@ unmapAes <- function(data, mapping, plot) {
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
       })
-      unmapFactors(df, origin = plotData)
+      unmapFactors(df, origin = plotData, plot = plot)
     },
     data,
     mapping,
@@ -136,11 +164,11 @@ unmapAes <- function(data, mapping, plot) {
 }
 
 #' Order by panels
-#' 
+#'
 #' Orders each data frame in a list by column \code{PANEL} if it exists.
-#' 
+#'
 #' @param dfList A list of data frames.
-#' 
+#'
 #' @return A list of data frames.
 orderByPanels <- function(dfList) {
   lapply(dfList, function(df) {
@@ -153,20 +181,20 @@ orderByPanels <- function(dfList) {
 }
 
 #' Get plot layer data
-#' 
-#' Returns list of data elements from plot layers. If plot layer data element is 
-#' ggplot2 waiver then plot's data element is used as default. 
-#' 
+#'
+#' Returns list of data elements from plot layers. If plot layer data element is
+#' ggplot2 waiver then plot's data element is used as default.
+#'
 getPlotLayerData <- function(plot) {
   lapply(
-    plot$layers, 
+    plot$layers,
     function(l) { if (is(l$data, "waiver")) plot$data else l$data }
   )
 }
 
 #' Remove out of range data
 #'
-#' If plot has data that was filtered when specific geom was added 
+#' If plot has data that was filtered when specific geom was added
 #' it should be filtered out of data.
 #'
 removeOutOfRangeData <- function(data, plot, built) {
@@ -180,7 +208,7 @@ removeOutOfRangeData <- function(data, plot, built) {
       d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
       d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
     }
-    
+
     d
   })
 }
@@ -197,19 +225,19 @@ getRanges <- function(plot, built) {
     xRanges <- sapply(built$layout$panel_scales_x, function(scale) {
       ggplot2:::expand_limits_scale(
         scale = scale,
-        expand = ggplot2:::default_expansion(scale), 
-        coord_limits = built$layout$coord$limits$x 
+        expand = ggplot2:::default_expansion(scale),
+        coord_limits = built$layout$coord$limits$x
       )
     })
     yRanges <- sapply(built$layout$panel_scales_y, function(scale) {
       ggplot2:::expand_limits_scale(
         scale = scale,
-        expand = ggplot2:::default_expansion(scale), 
-        coord_limits = built$layout$coord$limits$y 
+        expand = ggplot2:::default_expansion(scale),
+        coord_limits = built$layout$coord$limits$y
       )
     })
   }
-  
+
   list(
     x = c(min(xRanges[1, ]), max(xRanges[2, ])),
     y = c(min(yRanges[1, ]), max(yRanges[2, ]))
@@ -260,12 +288,12 @@ getNamesFromVarDict <- function(df, varDict, mapping) {
 }
 
 #' As trans
-#' 
-#' Gets a proper trans object from scales package. Original function 
+#'
+#' Gets a proper trans object from scales package. Original function
 #' scales::as.trans() is not working properly when scales are in Imports
-#' 
+#'
 #' @param x character string, the scale name
-#' 
+#'
 #' @return scale object
 as_trans <- function(x){
   trans <- get(paste0(x, "_trans"), asNamespace("scales"))
@@ -340,10 +368,10 @@ roundColumn <- function(column, maxDecimals = 3) {
 roundValues <- function(data) {
   lapply(data, function(df) {
     if (nrow(df) > 0 && "x" %in% names(df)) {
-      df[["x"]] <- roundColumn(df[["x"]])        
+      df[["x"]] <- roundColumn(df[["x"]])
     }
     if (nrow(df) > 0 && "y" %in% names(df)) {
-      df[["y"]] <- roundColumn(df[["y"]]) 
+      df[["y"]] <- roundColumn(df[["y"]])
     }
 
     df
@@ -351,14 +379,14 @@ roundValues <- function(data) {
 }
 
 #' Remove rows with NA for required aes
-#' 
+#'
 removeRowsWithNA <- function(data, layers, originalData) {
   mapply(
     FUN = function(df, layer, origData){
       origData[["row_index"]] <- seq_len(nrow(origData))
       # don't inform twice about data removal (Removed n rows containing missing values (geom_point))
       origData <- suppressWarnings(layer$geom$handle_na(origData, layer$geom_params))
-      
+
       df[origData$row_index, ]
     },
     data,
