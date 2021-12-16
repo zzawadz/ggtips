@@ -89,7 +89,33 @@ getLayerGeom <- function(layer) {
 
 #' Unmap factors
 #'
-unmapFactors <- function(df, origin) {
+unmapFactors <- function(df, origin, plot) {
+  if (nrow(df) != nrow(origin)) {
+    q <- ggplot_build(plot)
+    mapping <- q[["plot"]][["mapping"]]
+    explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
+
+    factors <- Filter(
+      function(name) { is.factor(origin[[name]]) },
+      names(origin)
+    )
+    for (f in factors) {
+      if (f %in% names(df)) {
+        # find mapping
+        map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
+        if (length(map_found) > 0) {
+          found_idx <- which(names(mapping) == map_found)
+          plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
+          colors <- plot_scales[["palette.cache"]]
+          values <- plot_scales[["range"]][["range"]]
+
+          df[[f]] <- sapply(df[[f]], function(x) values[which(colors == x)])
+        }
+      }
+    }
+    return(df)
+  }
+
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
   # Include only matching rows
@@ -127,7 +153,7 @@ unmapAes <- function(data, mapping, plot) {
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
       })
-      unmapFactors(df, origin = plotData)
+      unmapFactors(df, origin = plotData, plot = plot)
     },
     data,
     mapping,
