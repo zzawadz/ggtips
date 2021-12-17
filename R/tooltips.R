@@ -210,15 +210,15 @@ getTooltipsForPiechart <- function(pp, varDict) {
   }
 
   built = ggplot2::ggplot_build(pp)
-  tt_data <- ggtips:::getTooltipData(
+  tt_data <- getTooltipData(
     pp,
     built = built,
     varDict = varDict,
     plotScales = NULL,
     callback = NULL)
   tt_data <- tt_data[[1]]
-  tooltip <- ggtips:::tooltipDataToText(tt_data)
-  coords <- getPolygonsCenters(pp)
+  tooltip <- tooltipDataToText(tt_data)
+  coords <- getPolygonsCentersNormalized(pp)
 
   list(
     pies = list(
@@ -243,6 +243,7 @@ getPanelNamesAndPositions <- function(grobs) {
 }
 
 getPanelsBorders <- function(p) {
+  plot(p) # TODO: how to avoid plotting? removing this line causes a viewport error
   g <- gridExtra::arrangeGrob(p)
   g <- g$grobs[[1]]
   layoutNames <- ggtips:::assignLayoutNamesToPanels(g)
@@ -297,10 +298,8 @@ getPolygonsCenters <- function(p) {
 
   panels_cart_to_polar <- lapply(layoutNames, function(panel) {
     i <- which(s2$layout$name == panel)
-    print(sprintf("processing %s", panel))
     children_names <- getChildrenNames(s2$grobs[[i]]$children)
     which_bar.gTree <- grep(pattern = "^bar.gTree.*", x = children_names)
-
 
     from_cart_to_polar <- lapply(s2$grobs[[i]]$children[[which_bar.gTree]]$children, function(p) {
       cx <- cy <- 0.5
