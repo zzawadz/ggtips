@@ -91,9 +91,13 @@ getLayerGeom <- function(layer) {
 #'
 unmapFactors <- function(df, origin, plot) {
   if (nrow(df) != nrow(origin)) {
-    q <- ggplot_build(plot)
+    q <- ggplot2::ggplot_build(plot)
     mapping <- q[["plot"]][["mapping"]]
-    explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
+    explicite_mapping <- sapply(mapping, function(i) {
+      if ("formula" %in% class(i)) {
+        labels(terms(i))
+      }
+    })
 
     factors <- Filter(
       function(name) { is.factor(origin[[name]]) },
