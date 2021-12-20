@@ -90,7 +90,7 @@ getBarColors <- function(p) {
 
   fills <- lapply(panel_idx, function(p) {
     grob_children <- gt$grobs[[p]]$children
-    rect_idx <- grep(pattern = "\\.rect\\.", x = names(grob_children))
+    rect_idx <- grep(pattern = "geom_rect\\.rect", x = names(grob_children))
     if (length(rect_idx) == 0)
       return()
     grob_children[[rect_idx]]$gp$fill
