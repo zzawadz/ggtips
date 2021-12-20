@@ -91,7 +91,7 @@ getLayerGeom <- function(layer) {
 #'
 unmapFactors <- function(df, origin, plot) {
   if (nrow(df) != nrow(origin)) {
-    q <- ggplot_build(plot)
+    q <- ggplot2::ggplot_build(plot)
     mapping <- q[["plot"]][["mapping"]]
     explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
 
