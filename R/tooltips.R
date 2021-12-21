@@ -209,7 +209,7 @@ getTooltipsForPiechart <- function(pp, varDict) {
     return(NULL)
   }
 
-  built = ggplot2::ggplot_build(pp)
+  built <- ggplot2::ggplot_build(pp)
   tt_data <- getTooltipData(
     pp,
     built = built,
