@@ -220,10 +220,10 @@ getTooltipsForPiechart <- function(pp, varDict) {
   tooltip <- tooltipDataToText(tt_data)
   coords <- getPolygonsCentersNormalized(pp)
 
-  coords$abs$tooltip <- tt_data
-  browser()
+  coords$tooltip <- tooltip
+  # (Jakub) return data structured (almost) as the front-end expects
   list(
-    pies = list(
+    polar_rect = list(
       data = coords
     )
   )
@@ -419,45 +419,29 @@ getPolygonsCentersNormalized <- function(pp) {
     panel_center <- panels_borders[[i]]$panel_center
 
     res <- lapply(polygons, function(p) {
-      list(
-        abs = data.frame(
-          x = p$cartesian_center$x * panel_width + panel_center["x"],
-          y = -p$cartesian_center$y * panel_height + panel_center["y"]
-        ),
-        relative = as.data.frame(p$cartesian_center),
-        edges = list(
-          abs = data.frame(
-            x = p$cartesian_edges$x * panel_width + panel_center["x"],
-            y = p$cartesian_edges$y * panel_height + panel_center["y"]
-          ),
-          relative = as.data.frame(p$cartesian_edges)
-        )
+      abs = data.frame(
+        abs_x = p$cartesian_center$x * panel_width + panel_center["x"],
+        abs_y = -p$cartesian_center$y * panel_height + panel_center["y"]
       )
+      relative = as.data.frame(p$cartesian_center)
+      edges = list(
+        abs = data.frame(
+          x = p$cartesian_edges$x * panel_width + panel_center["x"],
+          y = -p$cartesian_edges$y * panel_height + panel_center["y"]
+        ),
+        relative = as.data.frame(p$cartesian_edges)
+      )
+      # clean rownames, which are unnecessary but may raise warnings
+      rownames(abs) <- rownames(relative) <- rownames(edges[[1]]) <- NULL
+      d <- cbind(abs, relative, edges)
+      # (Jakub) nest the data - it's the best way I've found so far to be as close to
+      # json expected output as possible
+      d_nested <- tidyr::nest(d, cols = grep("\\.", x = colnames(d)))
+      colnames(d_nested) <- c("x", "y", "rel_x", "rel_y", "edges")
+      colnames(d_nested$edges[[1]]) <- c("x", "y", "rel_x", "rel_y")
+      d_nested
     })
-    res_abs <- do.call(rbind, lapply(res, function(i) i$abs))
-    res_rel <- do.call(rbind, lapply(res, function(i) i$relative))
-    res_edges_abs <- do.call(rbind, lapply(res, function(i) i$edges$abs))
-    res_edges_rel <- do.call(rbind, lapply(res, function(i) i$edges$relative))
-
-    list(abs = res_abs,
-         rel = res_rel,
-         edges = list(
-           abs = res_edges_abs,
-           rel = res_edges_rel
-         ))
+    do.call(rbind, res)
   })
-  out <- polygons_normalized
-  out_abs <- do.call(rbind, lapply(out, function(i) i$abs))
-  out_rel <- do.call(rbind, lapply(out, function(i) i$rel))
-  out_edges_abs <- do.call(rbind, lapply(out, function(i) i$edges$abs))
-  out_edges_rel <- do.call(rbind, lapply(out, function(i) i$edges$rel))
-
-  list(
-    abs = out_abs,
-    rel = out_rel,
-    edges = list(
-      abs = out_edges_abs,
-      rel = out_edges_rel
-    )
-  )
+  do.call(rbind, polygons_normalized)
 }
