@@ -117,8 +117,24 @@ if (typeof jQuery === 'undefined') {
                     $e.is(barPlotSelector) && !isBackgroundRect($e)) { // bar plot
                     point = getRectCoords($svg, $e);
                     p = findData(data.rect.data, point, tolerance('rect'));
-                } else if ($e.is('polygon')) { // pie chart
-                    // TODO: add pie charts
+                    if (p) {
+                        $e.addClass('ggtips-element');
+                    }
+                } else if (data.pies.data && $e.is('polygon')) { // pie chart
+                    var points = getSliceCoords($svg, $e);
+                    p = data.pies.data.find(function(p) {
+                        return isInsidePoly(points, p);
+                    });
+                    if (p) {
+                        $e.data({
+                            center: {
+                                x: p.x,
+                                y: p.y
+                            },
+                            points: points
+                        });
+                        $e.addClass('ggtips-element');
+                    }
                 }
                 // try points, that can also be rect or polygon
                 if (!p && data.points.data) {
@@ -131,32 +147,30 @@ if (typeof jQuery === 'undefined') {
                 }
             });
             if (settings.follow) {
-                if (barPlotSelector) {
-                    $svg.on('mousemove', barPlotSelector, function(e) {
-                        $tooltip.ggTooltip({
-                            container: container,
-                            element: e.target,
-                            box: {
-                                left: e.clientX - 5,
-                                top: e.clientY,
-                                height: 0,
-                                width: 10
-                            }
-                        });
-                    }).on('mouseover', barPlotSelector, function(e) {
-                        var $e = $(e.target);
-                        var tooltip = $e.data('tooltip');
-                        if (!tooltip) {
-                            return;
+                $svg.on('mousemove', '.ggtips-element', function(e) {
+                    $tooltip.ggTooltip({
+                        container: container,
+                        element: e.target,
+                        box: {
+                            left: e.clientX - 5,
+                            top: e.clientY,
+                            height: 0,
+                            width: 10
                         }
-                        $tooltip.html(tooltip).ggShotTooltip({
-                            element: e.target,
-                            container: container
-                        });
-                    }).on('mouseout', barPlotSelector, function() {
-                        $tooltip.removeClass('ggtips-show-tooltip');
                     });
-                }
+                }).on('mouseover', '.ggtips-element', function(e) {
+                    var $e = $(e.target);
+                    var tooltip = $e.data('tooltip');
+                    if (!tooltip) {
+                        return;
+                    }
+                    $tooltip.html(tooltip).ggShotTooltip({
+                        element: e.target,
+                        container: container
+                    });
+                }).on('mouseout', '.ggtips-element', function() {
+                    $tooltip.removeClass('ggtips-show-tooltip');
+                });
                 return;
             }
 
@@ -343,6 +357,19 @@ if (typeof jQuery === 'undefined') {
             return point;
         };
     }
+
+    // -------------------------------------------------------------------------
+    // :: get Pie slice corrdinate in 0-1 range
+    // -------------------------------------------------------------------------
+    var getSliceCoords = widthViewbox(function($element, viewbox) {
+        var p = getPoints($element);
+        return p.map(function(p) {
+            return {
+                x: p.x / viewbox.width,
+                y: p.y / viewbox.height
+            };
+        });
+    });
 
     // -------------------------------------------------------------------------
     // :: Transform input point (0-1) into SVG coordinate using viewbox
@@ -647,20 +674,9 @@ if (typeof jQuery === 'undefined') {
                 self.data('offset', offset);
                 self.data('box', box);
                 // big polygons are part of pie charts
-                if (self.is('polygon')) {
-                    if (box.width > max || box.height > max) {
-                        self.addClass('ggtips-large');
-                        var points = getPoints(self);
-                        self.data('points', points);
-                        var point = getAveragePoint(points);
-                        self.data('center', point);
-                    }
-                } else if (self.is('rect')) {
+                if (self.is('polygon,rect')) {
                     if (!(box.width < max || box.height < max)) {
                         self.addClass('ggtips-large');
-                    }
-                    if (!isBackgroundRect(self)) {
-                        self.addClass('ggtips-bar');
                     }
                 }
             });
@@ -682,34 +698,28 @@ if (typeof jQuery === 'undefined') {
                 var closest;
                 // calculate distance to all elements matched by selector
                 // and find the closest
+                var self = $(this);
                 try {
                     var distances = $elements.map(function() {
                         var distance;
-                        var self = $(this);
-                        if (this instanceof SVGRectElement) {
-                            if (self.is('.ggtips-large')) {
+                        if (self.is('.ggtips-large')) {
+                            if (this instanceof SVGRectElement) {
                                 if (isInsideRect(this, point)) {
                                     distance = 0;
                                 } else {
                                     distance = outside;
                                 }
-                                return {
-                                    distance: distance,
-                                    element: this
-                                };
-                            }
-                        }
-                        if (this instanceof SVGPolygonElement) {
-                            var self = $(this);
-                            if (self.is('.ggtips-large')) {
-                                var center = self.data('center');
+                            } else if (this instanceof SVGPolygonElement) {
                                 var points = self.data('points');
-                                var distance;
-                                if (isPointInPoly(points, point)) {
-                                    distance = 0;
-                                } else {
-                                    distance = outside;
+                                if (points) {
+                                    if (isInsidePoly(points, self.data('center'))) {
+                                        distance = 0;
+                                    } else {
+                                        distance = outside;
+                                    }
                                 }
+                            }
+                            if (typeof distance !== 'undefined') {
                                 return {
                                     distance: distance,
                                     element: this
@@ -838,7 +848,7 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     // ref: https://stackoverflow.com/a/8721483/387194
     // -------------------------------------------------------------------------
-    function isPointInPoly(points, pt){
+    function isInsidePoly(points, pt){
         var result = false;
         for (var i = 0, j = points.length - 1; i < points.length; j = i++) {
             if ((points[i].y > pt.y) != (points[j].y > pt.y) &&
