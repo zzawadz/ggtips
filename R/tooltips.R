@@ -220,9 +220,11 @@ getTooltipsForPiechart <- function(pp, varDict) {
   tooltip <- tooltipDataToText(tt_data)
   coords <- getPolygonsCentersNormalized(pp)
 
+  coords$abs$tooltip <- tt_data
+  browser()
   list(
     pies = list(
-      data = cbind(tooltip, coords)
+      data = coords
     )
   )
 }
@@ -353,18 +355,40 @@ getPolygonsCenters <- function(p) {
       extrema <- apply(polars, MARGIN = 2, FUN = function(x) {
         c(min = min(x, na.rm = TRUE), max = max(x, na.rm = TRUE))
       })
-      row_min <- which(rownames(extrema) == "min")
-      row_max <- which(rownames(extrema) == "max")
 
-      polar_center <- list(r = (extrema[row_min, "r"] + extrema[row_max, "r"]) / 2,
-                           phi = (extrema[row_min, "phi"] + extrema[row_max, "phi"]) / 2)
+      mean_r <- mean(extrema[, "r"])
+      mean_phi <- mean(extrema[, "phi"])
+
+      polar_center <- list(r = mean_r, phi = mean_phi)
       cartesian_center <- list(x = polar_center$r * cos(polar_center$phi),
                                y = polar_center$r * sin(polar_center$phi))
+      # calculate point on rectangle egdes:
+      midpoints_v <- cbind(r = mean_r, phi = extrema[, "phi"])
+      midpoints_h <- cbind(r = extrema[, "r"], phi = mean_phi)
+      corners <- expand.grid(r = extrema[, "r"], phi = extrema[, "phi"])
+
+      edges <- rbind(
+        polar_center,
+        midpoints_h,
+        midpoints_v,
+        corners
+      )
+
+      edges_cart <- t(apply(edges, MARGIN = 1, FUN = function(x) {
+        r <- unname(x["r"])
+        phi <- unname(x["phi"])
+        c(x = r * cos(phi),
+          y = r * sin(phi))
+      }))
+
+      edges_cart <- as.data.frame(edges_cart)
 
       list(polar_coordinates = polars,
            polar_vertices = extrema,
            cartesian_center = cartesian_center,
-           polar_center = polar_center)
+           polar_center = polar_center,
+           polar_edges = edges,
+           cartesian_edges = edges_cart)
     })
 
     from_cart_to_polar
@@ -395,14 +419,45 @@ getPolygonsCentersNormalized <- function(pp) {
     panel_center <- panels_borders[[i]]$panel_center
 
     res <- lapply(polygons, function(p) {
-      data.frame(
-        x = p$cartesian_center$x * panel_width + panel_center["x"],
-        y = -p$cartesian_center$y * panel_height + panel_center["y"]
+      list(
+        abs = data.frame(
+          x = p$cartesian_center$x * panel_width + panel_center["x"],
+          y = -p$cartesian_center$y * panel_height + panel_center["y"]
+        ),
+        relative = as.data.frame(p$cartesian_center),
+        edges = list(
+          abs = data.frame(
+            x = p$cartesian_edges$x * panel_width + panel_center["x"],
+            y = p$cartesian_edges$y * panel_height + panel_center["y"]
+          ),
+          relative = as.data.frame(p$cartesian_edges)
+        )
       )
     })
-    res <- do.call(rbind, res)
+    res_abs <- do.call(rbind, lapply(res, function(i) i$abs))
+    res_rel <- do.call(rbind, lapply(res, function(i) i$relative))
+    res_edges_abs <- do.call(rbind, lapply(res, function(i) i$edges$abs))
+    res_edges_rel <- do.call(rbind, lapply(res, function(i) i$edges$relative))
+
+    list(abs = res_abs,
+         rel = res_rel,
+         edges = list(
+           abs = res_edges_abs,
+           rel = res_edges_rel
+         ))
   })
-  out <- do.call(rbind, polygons_normalized)
-  rownames(out) <- NULL
-  out
+  out <- polygons_normalized
+  out_abs <- do.call(rbind, lapply(out, function(i) i$abs))
+  out_rel <- do.call(rbind, lapply(out, function(i) i$rel))
+  out_edges_abs <- do.call(rbind, lapply(out, function(i) i$edges$abs))
+  out_edges_rel <- do.call(rbind, lapply(out, function(i) i$edges$rel))
+
+  list(
+    abs = out_abs,
+    rel = out_rel,
+    edges = list(
+      abs = out_edges_abs,
+      rel = out_edges_rel
+    )
+  )
 }
