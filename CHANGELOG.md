@@ -1,3 +1,7 @@
+## 0.7.1
+### Bugs
+* Handle case when there are no valid points for geom coordinates
+
 ## 0.7.0
 ### Features
 * add support for bar plots
