@@ -357,6 +357,10 @@ getGeomCoordsForGrob <- function(gtree,
     validX <- which(xVal >= 0 & xVal <= 1)
     validY <- which(yVal >= 0 & yVal <= 1)
     validPoints <- intersect(validX, validY)
+    
+    if (length(validPoints) == 0) {
+      return(NULL)
+    }
 
     geomGrob$x <- geomGrob$x[validPoints]
     geomGrob$y <- geomGrob$y[validPoints]
