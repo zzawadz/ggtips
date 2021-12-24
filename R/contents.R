@@ -89,12 +89,23 @@ getLayerGeom <- function(layer) {
 
 #' Unmap factors
 #'
-unmapFactors <- function(df, origin, plot) {
-  if (nrow(df) != nrow(origin)) {
+unmapFactors <- function(df, origin, plot, layerData) {
+  isBarLayer <- any(
+    sapply(c("GeomBar", "GeomRect", "GeomCol"), function(g) {
+      g %in% class(layerData$geom)
+    })
+  )
+
+  if (isBarLayer) {
     q <- ggplot2::ggplot_build(plot)
     mapping <- q[["plot"]][["mapping"]]
-    explicite_mapping <- sapply(mapping, function(i) labels(terms(i)))
-
+    explicite_mapping <- sapply(mapping, function(i) {
+      if ("formula" %in% class(i)) {
+        labels(terms(i))
+      } else {
+        i
+      }
+    })
     factors <- Filter(
       function(name) { is.factor(origin[[name]]) },
       names(origin)
@@ -105,13 +116,29 @@ unmapFactors <- function(df, origin, plot) {
         map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
         if (length(map_found) > 0) {
           found_idx <- which(names(mapping) == map_found)
-          plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
-          colors <- plot_scales[["palette.cache"]]
-          values <- plot_scales[["range"]][["range"]]
+          if (map_found %in% c("fill", "color")) {
+            plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
+            colors <- plot_scales[["palette.cache"]]
+            values <- plot_scales[["range"]][["range"]]
 
-          df[[f]] <- sapply(df[[f]], function(x) values[which(colors == x)])
+            df[[f]] <- sapply(df[[f]], function(x) {
+              position <- which(colors == x)
+              if (length(position) > 0) {
+                return(values[position])
+              }
+              return(NA)
+            })
+          } else {
+            pseudo_levels <- sort(unique(as.character(df[[f]])))
+            levels_map <- cbind(pseudo_levels, levels(origin[[f]]))
+            # replace values in df
+            df[[f]] <- as.factor(levels_map[match(df[[f]], levels_map[, 1]), 2])
+          }
         }
       }
+    }
+    if ("StatIdentity" %in% class(layerData$stat)) {
+      df$count <- df$ymax - df$ymin
     }
     return(df)
   }
@@ -146,18 +173,20 @@ unmapFactors <- function(df, origin, plot) {
 #'
 unmapAes <- function(data, mapping, plot) {
   plotLayersData <- getPlotLayerData(plot)
+  layersData <- lapply(plot$layer, function(l) l)
 
   unmapped <- mapply(
-    function(df, map, plotData) {
+    function(df, map, plotData, layerData) {
       mapNames <- names(map)
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
       })
-      unmapFactors(df, origin = plotData, plot = plot)
+      unmapFactors(df, origin = plotData, plot = plot, layerData)
     },
     data,
     mapping,
     plotLayersData,
+    layersData,
     SIMPLIFY = FALSE
   )
   orderByPanels(unmapped)
@@ -360,6 +389,7 @@ roundColumn <- function(column, maxDecimals = 3) {
       round(column, digits = nDigits)
     )
   }
+  column
 }
 
 #' Round values
