@@ -130,7 +130,15 @@ unmapFactors <- function(df, origin, plot, layerData) {
             })
           } else {
             pseudo_levels <- sort(unique(as.character(df[[f]])))
-            levels_map <- cbind(pseudo_levels, levels(origin[[f]]))
+            lvl_origin <- levels(origin[[f]])
+            if (length(pseudo_levels) > length(lvl_origin) &
+                !("PositionDodge" %in% class(layerData$position))) {
+              # if there are NAs in the data then there are less factor levels than codes for
+              # the variable in the df counterpart; in this case pad the levels witn NAs
+              # this is invalid if position = "dodge"
+              lvl_origin <- c(lvl_origin, rep(NA, length(pseudo_levels) - length(lvl_origin)))
+            }
+            levels_map <- cbind(pseudo_levels, lvl_origin)
             # replace values in df
             df[[f]] <- as.factor(levels_map[match(df[[f]], levels_map[, 1]), 2])
           }
