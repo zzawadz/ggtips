@@ -278,27 +278,59 @@ test_that("missing data is handled properly - random cells", {
   expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
 })
 
-test_that("missing data is handled properly - random cells", {
-  d_miss_gear4_am <- readRDS(system.file(
-    file.path("testdata", "missings_gear4_am.rds"),
+###### position dodge ----
+test_that("position dodge - no missing data", {
+  d <- readRDS(system.file(
+    file.path("testdata", "height_synthetic_data.rds"),
     package = "ggtips"
   ))
   p <- ggplot(
-    data = d_miss_gear4_am,
-    aes(x = am, fill = cyl)
-  ) + geom_bar(position = "dodge") + facet_wrap("gear")
+    data = d,
+    aes(x = age_class, fill = sex, y = height)
+  ) + geom_bar(stat = "identity", position = "dodge")
+  varDict <- list(age_class = "Age Class",
+                  height = "Mean Height",
+                  sex = "Sex")
   tt <- testgetTooltip(p, varDict)
   expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 8</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 6</li><li>Value: 4</li></ul>"
+    "<ul><li>Age Class: <5</li><li>Mean Height: 0.808</li><li>Sex: M</li></ul>",
+    "<ul><li>Age Class: <5</li><li>Mean Height: 0.859</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: >12</li><li>Mean Height: 1.637</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: >12</li><li>Mean Height: 1.668</li><li>Sex: M</li></ul>",
+    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.126</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.239</li><li>Sex: M</li></ul>"
   )
   expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+})
+
+test_that("position dodge - no missing data, incl. faceting", {
+  d <- readRDS(system.file(
+    file.path("testdata", "height_synthetic_data.rds"),
+    package = "ggtips"
+  ))
+  p0 <- ggplot(
+    data = d,
+    aes(x = age_class, fill = sex, y = height)
+  ) +
+    geom_bar(stat = "identity", position = "dodge")
+  p1 <- p0 + facet_wrap("sex")
+  p2 <- p0 + facet_wrap("age_class")
+
+  varDict <- list(age_class = "Age Class",
+                  height = "Mean Height",
+                  sex = "Sex")
+  tt <- lapply(list(p0, p1, p2), function(p) testgetTooltip(p, varDict))
+  expected_output <- c(
+    "<ul><li>Age Class: <5</li><li>Mean Height: 0.808</li><li>Sex: M</li></ul>",
+    "<ul><li>Age Class: <5</li><li>Mean Height: 0.859</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: >12</li><li>Mean Height: 1.637</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: >12</li><li>Mean Height: 1.668</li><li>Sex: M</li></ul>",
+    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.126</li><li>Sex: F</li></ul>",
+    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.239</li><li>Sex: M</li></ul>"
+  )
+  lapply(tt, function(t) {
+    expect_equivalent(t$rect$data[order(t$rect$data$tooltip), "tooltip"], expected_output)
+  })
 })
 
 
