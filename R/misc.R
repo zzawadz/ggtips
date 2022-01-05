@@ -93,7 +93,16 @@ getBarColors <- function(p) {
     rect_idx <- grep(pattern = "geom_rect\\.rect", x = names(grob_children))
     if (length(rect_idx) == 0)
       return()
-    grob_children[[rect_idx]]$gp$fill
+    fill <- grob_children[[rect_idx]]$gp$fill
+    # remove FF opacity from the end of the hex code as it may cause problems when matching with svg
+    # on the front-end
+    gsub(pattern = "(^#[0-9A-Z]+)FF$", x = toupper(fill), replacement = "\\1")
   })
-  unlist(fills)
+  fills <- unlist(fills)
+  if (length(fills) == 1) {
+    # if there are more than one element it will be parsed as an array in JavaScript even if it's
+    # a vector in R; in case 'fills' is a one-element list it should be  treated as a list
+    fills <- as.list(fills)
+  }
+  return(fills)
 }

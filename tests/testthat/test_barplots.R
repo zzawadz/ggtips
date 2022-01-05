@@ -333,6 +333,23 @@ test_that("position dodge - no missing data, incl. faceting", {
   })
 })
 
+###### tests for only one bar
+test_that("One bar with ggplot default fill is handled properly", {
+  p0 <- ggplot(data = data.frame(category = factor("X")), aes(x = category))
+  p1 <- p0 + geom_bar()
+  p2 <- p0 + geom_bar(fill = "#a0b0f0")
+  varDict <- list(category = "Category")
+  tts <- lapply(list(p1, p2), function(p) {
+    tt <- testgetTooltip(p, varDict)
+    expect_true(is.list(tt$rect$colors))
+    expect_length(tt$rect$colors, 1)
+    expect_length(unlist(tt$rect$colors), 1)
+    expect_equivalent(tt$rect$data$tooltip, "<ul><li>Category: X</li></ul>")
+    tt
+  })
+  expect_equal(tolower(tts[[2]]$rect$colors[[1]]), "#a0b0f0")
+})
+
 
 TEST_SCENARIOS
 # tests for unmapFactor
