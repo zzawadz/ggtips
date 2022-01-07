@@ -83,7 +83,10 @@ getGeomsFromGrob <- function(g) {
 filterGeoms <- function(geomList, classes) {
   Filter(
     function(elem) {
-      any(classes %in% class(elem))
+      any(classes %in% class(elem) &
+            # avoid catching elements like 'rect[panel.border.rect]', only actual geometries should
+            # be considered as valid objects
+            grepl(pattern = "geom_", x = elem$name))
     },
     geomList
   )
@@ -357,7 +360,7 @@ getGeomCoordsForGrob <- function(gtree,
     validX <- which(xVal >= 0 & xVal <= 1)
     validY <- which(yVal >= 0 & yVal <= 1)
     validPoints <- intersect(validX, validY)
-    
+
     if (length(validPoints) == 0) {
       return(NULL)
     }
