@@ -114,14 +114,17 @@ unmapFactors <- function(df, origin, plot, layerData) {
       if (f %in% names(df)) {
         # find mapping
         map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
-        if (length(map_found) > 0) {
-          found_idx <- which(names(mapping) == map_found)
+        new_values <- lapply(map_found, function(map_found) {
+          df_original_names <- unlist(attributes(df)["originalNames"])
+          df_col_idx <- which(df_original_names == map_found)
           if (map_found %in% c("fill", "color")) {
-            plot_scales <- q[["plot"]][["scales"]][["scales"]][[found_idx]]
+            plot_scales <- q[["plot"]][["scales"]][["scales"]]
+            found_idx <- which(sapply(plot_scales, function(s) any(s$aesthetics == map_found)))
+            plot_scales <- plot_scales[[found_idx]]
             colors <- plot_scales[["palette.cache"]]
             values <- plot_scales[["range"]][["range"]]
 
-            df[[f]] <- sapply(df[[f]], function(x) {
+            df[[df_col_idx]] <- sapply(df[[df_col_idx]], function(x) {
               position <- which(colors == x)
               if (length(position) > 0) {
                 return(values[position])
@@ -133,9 +136,12 @@ unmapFactors <- function(df, origin, plot, layerData) {
             stopifnot(length(scales_x) == 1) # only plots with one x scale are handled at the moment
 
             cat_levels <- scales_x[[1]][["range"]][["range"]]
-            df[[f]] <- cat_levels[round(as.numeric(df[[f]]))]
+            df[[df_col_idx]] <- cat_levels[round(as.numeric(df[[df_col_idx]]))]
           }
-        }
+          return(list(value = df[[df_col_idx]], column_index = df_col_idx))
+        })
+        cols_to_replace <- sapply(new_values, function(i) i$column_index)
+        df[, cols_to_replace] <- lapply(new_values, function(i) i$value)
       }
     }
     if ("StatIdentity" %in% class(layerData$stat)) {
@@ -179,9 +185,12 @@ unmapAes <- function(data, mapping, plot) {
   unmapped <- mapply(
     function(df, map, plotData, layerData) {
       mapNames <- names(map)
+      originalNames <- names(df)
       names(df) <- sapply(names(df), function(name) {
         if (name %in% mapNames) { map[[name]] } else { name }
       })
+      # store the original names; they're required in case one variable is mapped to many aestetics
+      attributes(df) <- append(attributes(df), list(originalNames = originalNames))
       unmapFactors(df, origin = plotData, plot = plot, layerData)
     },
     data,
