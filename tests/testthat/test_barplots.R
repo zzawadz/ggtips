@@ -350,6 +350,73 @@ test_that("One bar with ggplot default fill is handled properly", {
   expect_equal(tolower(tts[[2]]$rect$colors[[1]]), "#a0b0f0")
 })
 
+###### ~ missing data ----
+test_that("missing data is handled properly - random cells - position dodge", {
+  d_miss_rand <- readRDS(file = system.file(
+    file.path("testdata", "missings_random_cells.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_rand,
+    aes(x = am, fill = cyl)
+  ) + geom_bar(position = "dodge")
+  tt <- testgetTooltip(p, varDict)
+  expected_output <- c(
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 10</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: NA</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 5</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
+    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 3</li></ul>"
+  )
+  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+})
+
+test_that("missing data is handled properly - whole group all variables - position dodge", {
+  d_miss_cyl <- readRDS(system.file(
+    file.path("testdata", "missings_cyl4.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_cyl,
+    aes(x = am, fill = cyl)
+  ) + geom_bar(position = "dodge")
+  tt <- testgetTooltip(p, varDict)
+  expected_output <- c(
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: NA</li><li>Cylinders: NA</li><li>Value: 11</li></ul>"
+  )
+  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+})
+
+test_that("missing data is handled properly - whole group single variable - position dodge", {
+  d_miss_gear4_am <- readRDS(system.file(
+    file.path("testdata", "missings_gear4_am.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_gear4_am,
+    aes(x = am, fill = cyl)
+  ) + geom_bar(position = "dodge")
+  tt <- testgetTooltip(p, varDict)
+  expected_output <- c(
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
+    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
+    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 8</li></ul>",
+    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 6</li><li>Value: 4</li></ul>"
+  )
+  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+})
 
 TEST_SCENARIOS
 # tests for unmapFactor
