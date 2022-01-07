@@ -117,7 +117,7 @@ unmapFactors <- function(df, origin, plot, layerData) {
         new_values <- lapply(map_found, function(map_found) {
           df_original_names <- unlist(attributes(df)["originalNames"])
           df_col_idx <- which(df_original_names == map_found)
-          if (map_found %in% c("fill", "color")) {
+          if (map_found %in% c("fill", "colour")) {
             plot_scales <- q[["plot"]][["scales"]][["scales"]]
             found_idx <- which(sapply(plot_scales, function(s) any(s$aesthetics == map_found)))
             plot_scales <- plot_scales[[found_idx]]
