@@ -96,7 +96,7 @@ getBarColors <- function(p) {
     fill <- grob_children[[rect_idx]]$gp$fill
     # remove FF opacity from the end of the hex code as it may cause problems when matching with svg
     # on the front-end
-    gsub(pattern = "(^#[0-9A-Z]+)FF$", x = toupper(fill), replacement = "\\1")
+    gsub(pattern = "(^#[0-9A-Z]{6})FF$", x = toupper(fill), replacement = "\\1")
   })
   fills <- unlist(fills)
   if (length(fills) == 1) {
