@@ -2,22 +2,6 @@ library(ggplot2)
 library(ggtips)
 library(shiny)
 
-STATS <- c("count", "identity")
-FACETS <- c(FALSE, TRUE)
-GEOMS <- c("geom_bar", "geom_col")
-MULTI <- c(FALSE, TRUE)
-MISSING_DATA <- c(FALSE, TRUE)
-POSITION <- c("stack", "dodge")
-
-TEST_SCENARIOS <- expand.grid(
-  stat = STATS,
-  facet = FACETS,
-  geom = GEOMS,
-  missing_data = MISSING_DATA,
-  psoition = POSITION,
-  multi = MULTI
-)
-
 #### helpers: ----
 testgetTooltip <- function(p, varDict) {
   gt <- gridExtra::grid.arrange(p)[[1]][[1]]
@@ -417,9 +401,3 @@ test_that("missing data is handled properly - whole group single variable - posi
   )
   expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
 })
-
-TEST_SCENARIOS
-# tests for unmapFactor
-# origin <- d
-# g <- ggplot_build(p)
-# g$data
