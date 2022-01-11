@@ -227,3 +227,22 @@ test_that("tooltip data", {
   )
   testMpgTooltipData(p = p, varDict = varDict, facetVar = NULL)
 })
+
+test_that("Warning message will be displayed when key specified in varDict
+  does not exist in data", {
+  varDict <- list(
+    Sepal.Width = "Existing variable", 
+    notExistingKey1 = "Missing variable", 
+    notExistingKey2 = "Another missing variable"
+  )
+  expect_warning(
+    object = ggtips:::getTooltipData(
+      plot = fullDataPlot$testPlot,
+      built = fullDataPlot$testGrob,
+      varDict = varDict,
+      plotScales = NULL,
+      callback = NULL
+    ),
+    regexp = "The following variables are set as keys in varDict but are missing in plot data: notExistingKey1, notExistingKey2"
+  )
+})
