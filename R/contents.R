@@ -408,8 +408,41 @@ getTooltipData <- function(plot, built, varDict, plotScales, callback) {
   data <- unmapAes(data, mapping = mapping, plot = plot)
   data <- addCustomContents(data, callback = callback)
   data <- removeRowsWithNA(data, plot$layers, originalData) # must be executed after addCustomContents
+  validateVarDictKeys(varDict, data)
   lapply(data, getNamesFromVarDict, varDict = varDict, mapping = mapping)
 }
+
+#' Check if all variables specified as keys in varDict are present in plot data
+#' Warning will be displayed if any missing variable is found
+#' 
+validateVarDictKeys <- function(varDict, data) {
+  keys <- names(varDict)
+  dataVars <- sapply(data, names)
+  isMissing <- sapply(
+    keys,
+    isVarMissingInData,
+    data = dataVars
+  )
+  if (any(isMissing)) {
+    missingVars <- paste(keys[which(isMissing)], collapse = ", ")
+    message <- "The following variables are set as keys in varDict but are missing in plot data:"
+    warning(paste(message, missingVars))
+  }
+}
+
+#' Is variable missing in provided data
+#' 
+isVarMissingInData <- function(var, data) {
+  all(
+    sapply(
+      data,
+      function(x) { 
+        !is.element(var, x)
+      }
+    )
+  )
+}
+
 
 #' Convert tooltip data to character strings
 #'
