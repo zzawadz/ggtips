@@ -140,6 +140,53 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes
   expect_equivalent(tts_data[[2]], expected_output)
   expect_equivalent(tts_data[[3]], expected_output)
 })
+
+test_that("geom_bar, geom_col, data pre-aggregated are handled properly - grid", {
+  varDict <- list(am = "Auto/Manual", cyl = "Cylinders", gear = "Gear", count = "Value")
+  p1 <- ggplot(data = d,
+               aes(x = am, fill = cyl)) +
+    geom_bar() +
+    facet_grid(rows = vars(gear), cols = vars(cyl))
+
+  d_counts <- d
+  d_counts$count <- 1
+  d_counts <-
+    aggregate(count ~ am + cyl + gear, data = d_counts, length)
+  p2 <- ggplot(data <- d_counts,
+               aes(x = am, y = count, fill = cyl)) +
+    geom_bar(stat = "identity") +
+    facet_grid(rows = vars(gear), cols = vars(cyl))
+
+  p3 <- ggplot(data = d_counts,
+               aes(x = am, y = count, fill = cyl)) +
+    geom_col() +
+    facet_grid(rows = vars(gear), cols = vars(cyl))
+
+  tts <- lapply(list(p1, p2, p3), function(p) {
+    tt <- testGetTooltip(p, varDict)
+    expect_type(tt, "list")
+    expect_named(tt, c("rect"))
+    expect_named(tt[["rect"]], c("data", "colors"))
+    expect_length(tt[["rect"]][["data"]], 3)
+    expect_equal(class(tt[["rect"]][["data"]]), "data.frame")
+    expect_equal(nrow(tt[["rect"]][["data"]]), 10)
+    expect_named(tt[["rect"]][["data"]], c("tooltip", "x", "y"))
+    tt_data <- tt[["rect"]][["data"]]
+    tt_data[order(tt_data$tooltip), ]
+  })
+  expect_equivalent(tts[[1]], tts[[2]])
+  expect_equivalent(tts[[1]], tts[[3]])
+
+  tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "am_cyl_by_gear_facets.rds"),
+    package = "ggtips"
+  ))
+
+  expect_equivalent(tts_data[[1]], expected_output)
+  expect_equivalent(tts_data[[2]], expected_output)
+  expect_equivalent(tts_data[[3]], expected_output)
+})
 ####
 ###### missing data ----
 test_that("missing data is handled properly - random cells", {
