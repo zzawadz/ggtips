@@ -92,59 +92,8 @@ getLayerGeom <- function(layer) {
 unmapFactors <- function(df, origin, plot, layerData) {
   isBarLayer <- any(c("GeomBar", "GeomRect", "GeomCol") %in% class(layerData$geom))
 
-  if (isBarLayer) {
-    q <- ggplot2::ggplot_build(plot)
-    mapping <- q[["plot"]][["mapping"]]
-    explicite_mapping <- sapply(mapping, function(i) {
-      if ("formula" %in% class(i)) {
-        labels(terms(i))
-      } else {
-        i
-      }
-    })
-    factors <- Filter(
-      function(name) { is.factor(origin[[name]]) },
-      names(origin)
-    )
-    for (f in factors) {
-      if (f %in% names(df)) {
-        # find mapping
-        map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
-        new_values <- lapply(map_found, function(map_found) {
-          df_original_names <- unlist(attributes(df)["originalNames"])
-          df_col_idx <- which(df_original_names == map_found)
-          if (map_found %in% c("fill", "colour")) {
-            plot_scales <- q[["plot"]][["scales"]][["scales"]]
-            found_idx <- which(sapply(plot_scales, function(s) any(s$aesthetics == map_found)))
-            plot_scales <- plot_scales[[found_idx]]
-            colors <- plot_scales[["palette.cache"]]
-            values <- plot_scales[["range"]][["range"]]
+  if (isBarLayer) return(unmapFactorsBarLayer(df, origin, plot, layerData))
 
-            df[[df_col_idx]] <- sapply(df[[df_col_idx]], function(x) {
-              position <- which(colors == x)
-              if (length(position) > 0) {
-                return(values[position])
-              }
-              return(NA)
-            })
-          } else if (map_found == "x") {
-            scales_x <- q$layout$panel_scales_x
-            stopifnot(length(scales_x) == 1) # only plots with one x scale are handled at the moment
-
-            cat_levels <- scales_x[[1]][["range"]][["range"]]
-            df[[df_col_idx]] <- cat_levels[round(as.numeric(df[[df_col_idx]]))]
-          }
-          return(list(value = df[[df_col_idx]], column_index = df_col_idx))
-        })
-        cols_to_replace <- sapply(new_values, function(i) i$column_index)
-        df[, cols_to_replace] <- lapply(new_values, function(i) i$value)
-      }
-    }
-    if ("StatIdentity" %in% class(layerData$stat)) {
-      df$count <- df$ymax - df$ymin
-    }
-    return(df)
-  }
 
   # Order factor levels in the original data frame
   origin <- freezeFactorLevels(origin)
@@ -168,6 +117,60 @@ unmapFactors <- function(df, origin, plot, layerData) {
         df[[name]] <- origColumn
       }
     }
+  }
+  df
+}
+
+unmapFactorsBarLayer <- function(df, origin, plot, layerData) {
+  q <- ggplot2::ggplot_build(plot)
+  mapping <- q[["plot"]][["mapping"]]
+  explicite_mapping <- sapply(mapping, function(i) {
+    if ("formula" %in% class(i)) {
+      labels(terms(i))
+    } else {
+      i
+    }
+  })
+  factors <- Filter(
+    function(name) { is.factor(origin[[name]]) },
+    names(origin)
+  )
+  for (f in factors) {
+    if (f %in% names(df)) {
+      # find mapping
+      map_found <- names(explicite_mapping)[which(explicite_mapping == f)]
+      new_values <- lapply(map_found, function(map_found) {
+        df_original_names <- unlist(attributes(df)["originalNames"])
+        df_col_idx <- which(df_original_names == map_found)
+        if (map_found %in% c("fill", "colour")) {
+          plot_scales <- q[["plot"]][["scales"]][["scales"]]
+          found_idx <- which(sapply(plot_scales, function(s) any(s$aesthetics == map_found)))
+          plot_scales <- plot_scales[[found_idx]]
+          colors <- plot_scales[["palette.cache"]]
+          values <- plot_scales[["range"]][["range"]]
+
+          df[[df_col_idx]] <- sapply(df[[df_col_idx]], function(x) {
+            position <- which(colors == x)
+            if (length(position) > 0) {
+              return(values[position])
+            }
+            return(NA)
+          })
+        } else if (map_found == "x") {
+          scales_x <- q$layout$panel_scales_x
+          stopifnot(length(scales_x) == 1) # only plots with one x scale are handled at the moment
+
+          cat_levels <- scales_x[[1]][["range"]][["range"]]
+          df[[df_col_idx]] <- cat_levels[round(as.numeric(df[[df_col_idx]]))]
+        }
+        return(list(value = df[[df_col_idx]], column_index = df_col_idx))
+      })
+      cols_to_replace <- sapply(new_values, function(i) i$column_index)
+      df[, cols_to_replace] <- lapply(new_values, function(i) i$value)
+    }
+  }
+  if ("StatIdentity" %in% class(layerData$stat)) {
+    df$count <- df$ymax - df$ymin
   }
   df
 }
