@@ -90,11 +90,7 @@ getLayerGeom <- function(layer) {
 #' Unmap factors
 #'
 unmapFactors <- function(df, origin, plot, layerData) {
-  isBarLayer <- any(
-    sapply(c("GeomBar", "GeomRect", "GeomCol"), function(g) {
-      g %in% class(layerData$geom)
-    })
-  )
+  isBarLayer <- any(c("GeomBar", "GeomRect", "GeomCol") %in% class(layerData$geom))
 
   if (isBarLayer) {
     q <- ggplot2::ggplot_build(plot)

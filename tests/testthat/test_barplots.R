@@ -3,7 +3,7 @@ library(ggtips)
 library(shiny)
 
 #### helpers: ----
-testgetTooltip <- function(p, varDict) {
+testGetTooltip <- function(p, varDict) {
   gt <- gridExtra::grid.arrange(p)[[1]][[1]]
 
   ggtips:::getTooltips(
@@ -15,20 +15,33 @@ testgetTooltip <- function(p, varDict) {
   )
 }
 
-testWithShiny <- function(p, varDict) {
-  ui <- fluidPage(uiOutput("plot"))
-
-  server <- function(input, output, session) {
-    output$plot <-
-      ggtips::renderWithTooltips(plot = p, varDict = varDict)
-  }
-
-  shinyApp(ui, server)
+sortDataFrame <- function(x) {
+  # sort the data by all but the last columns in ascending order
+  ord_expr <- sapply(x, function(i) {
+    out <- paste(i, collapse = "','")
+    out <- paste0("c('", substitute(out), "')")
+  })
+  ord_expr <- paste(ord_expr, collapse = ",")
+  ord_expr <- paste0(
+    "x[order(",
+    ord_expr,
+    "), ]"
+  )
+  eval(parse(text = ord_expr))
 }
 
-# use it by simply calling testWithShiny(p, varDict)
-
-
+testGetTooltipData <- function(p, varDict) {
+  b <- ggplot2::ggplot_build(p)
+  d <- getTooltipData(
+    plot = p,
+    built = b,
+    varDict = varDict,
+    plotScales = NULL,
+    callback = NULL
+  )
+  d <- d[[1]]
+  sortDataFrame(d)
+}
 
 #### common (shared across all tests): ----
 factor_cols <- c("am", "gear", "cyl", "carb", "vs")
@@ -36,11 +49,10 @@ d <- mtcars
 d[, factor_cols] <-
   lapply(factor_cols, function(i)
     as.factor(d[, i]))
-varDict = list(am = "Auto/Manual", cyl = "Cylinders", count = "Value")
+varDict <- list(am = "Auto/Manual", cyl = "Cylinders", count = "Value")
 
 #### TESTS ----
 ###### no facets ----
-print(TEST_SCENARIOS[1, ])
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no factes", {
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) + geom_bar()
@@ -55,7 +67,7 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no fac
                aes(x = am, y = count, fill = cyl)) + geom_col()
 
   tts <- lapply(list(p1, p2, p3), function(p) {
-    tt <- testgetTooltip(p, varDict)
+    tt <- testGetTooltip(p, varDict)
     expect_type(tt, "list")
     expect_named(tt, c("rect"))
     expect_named(tt[["rect"]], c("data", "colors"))
@@ -68,24 +80,22 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no fac
   })
   expect_equivalent(tts[[1]], tts[[2]])
   expect_equivalent(tts[[1]], tts[[3]])
-  expected_output <- c(
-    tooltip = c(
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 3</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 8</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>"
-    )
+
+  tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
+  expected_output <- data.frame(
+    "Auto/Manual" = as.character(rep(c(0, 1), each = 3)),
+    "Cylinders" = as.character(rep(c(4, 6, 8), 2)),
+    "Value" = c(3, 4, 12, 8, 3, 2)
   )
 
-  expect_equivalent(tts[[1]]$tooltip, expected_output)
-  expect_equivalent(tts[[2]]$tooltip, expected_output)
-  expect_equivalent(tts[[3]]$tooltip, expected_output)
+  expect_equivalent(tts_data[[1]], expected_output)
+  expect_equivalent(tts_data[[2]], expected_output)
+  expect_equivalent(tts_data[[3]], expected_output)
 })
 
 ###### facets ----
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes", {
+  varDict <- list(am = "Auto/Manual", cyl = "Cylinders", gear = "Gear", count = "Value")
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) +
     geom_bar() +
@@ -106,7 +116,7 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes
     facet_wrap("gear")
 
   tts <- lapply(list(p1, p2, p3), function(p) {
-    tt <- testgetTooltip(p, varDict)
+    tt <- testGetTooltip(p, varDict)
     expect_type(tt, "list")
     expect_named(tt, c("rect"))
     expect_named(tt[["rect"]], c("data", "colors"))
@@ -120,23 +130,15 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes
   expect_equivalent(tts[[1]], tts[[2]])
   expect_equivalent(tts[[1]], tts[[3]])
 
-  expected_output <- c(
-      tooltip = c(
-        "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-        "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-        "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-        "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-        "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-        "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-        "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 6</li></ul>",
-        "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-        "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-        "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>"
-      )
-    )
-  expect_equivalent(tts[[1]]$tooltip, expected_output)
-  expect_equivalent(tts[[2]]$tooltip, expected_output)
-  expect_equivalent(tts[[3]]$tooltip, expected_output)
+  tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "am_cyl_by_gear_facets.rds"),
+    package = "ggtips"
+  ))
+
+  expect_equivalent(tts_data[[1]], expected_output)
+  expect_equivalent(tts_data[[2]], expected_output)
+  expect_equivalent(tts_data[[3]], expected_output)
 })
 ####
 ###### missing data ----
@@ -149,19 +151,12 @@ test_that("missing data is handled properly - random cells", {
       data = d_miss_rand,
       aes(x = am, fill = cyl)
     ) + geom_bar()
-    tt <- testgetTooltip(p, varDict)
-    expected_output <- c(
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 10</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: NA</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 5</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
-      "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 3</li></ul>"
-    )
-    expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+    tt <- testGetTooltipData(p, varDict)
+    expected_output <- readRDS(system.file(
+      file.path("testdata", "am_cyl_missings.rds"),
+      package = "ggtips"
+    ))
+    expect_equivalent(tt, expected_output)
 })
 
 test_that("missing data is handled properly - whole group all variables", {
@@ -173,15 +168,12 @@ test_that("missing data is handled properly - whole group all variables", {
       data = d_miss_cyl,
       aes(x = am, fill = cyl)
     ) + geom_bar()
-    tt <- testgetTooltip(p, varDict)
-    expected_output <- c(
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: NA</li><li>Cylinders: NA</li><li>Value: 11</li></ul>"
-    )
-    expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+    tt <- testGetTooltipData(p, varDict)
+    expected_output <- readRDS(system.file(
+      file.path("testdata", "am_cyl_missings2.rds"),
+      package = "ggtips"
+    ))
+    expect_equivalent(tt, expected_output)
 })
 
 test_that("missing data is handled properly - whole group single variable", {
@@ -193,18 +185,12 @@ test_that("missing data is handled properly - whole group single variable", {
       data = d_miss_gear4_am,
       aes(x = am, fill = cyl)
     ) + geom_bar()
-    tt <- testgetTooltip(p, varDict)
-    expected_output <- c(
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-      "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-      "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 8</li></ul>",
-      "<ul><li>Auto/Manual: NA</li><li>Cylinders: 6</li><li>Value: 4</li></ul>"
-    )
-    expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+    tt <- testGetTooltipData(p, varDict)
+    expected_output <- readRDS(system.file(
+      file.path("testdata", "am_cyl_missings3.rds"),
+      package = "ggtips"
+    ))
+    expect_equivalent(tt, expected_output)
 })
 
 ###### missing data with facets ----
@@ -217,27 +203,12 @@ test_that("missing data is handled properly - random cells", {
     data = d_miss_rand,
     aes(x = am, fill = cyl)
   ) + geom_bar() + facet_wrap("gear")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 3</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 7</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 5</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 1</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "am_cyl_missings4.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
 
 test_that("missing data is handled properly - random cells", {
@@ -249,17 +220,12 @@ test_that("missing data is handled properly - random cells", {
     data = d_miss_cyl,
     aes(x = am, fill = cyl)
   ) + geom_bar() + facet_wrap("gear")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: NA</li><li>Value: 11</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "am_cyl_missings5.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
 
 ###### position dodge ----
@@ -275,16 +241,12 @@ test_that("position dodge - no missing data", {
   varDict <- list(age_class = "Age Class",
                   height = "Mean Height",
                   sex = "Sex")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Age Class: <5</li><li>Mean Height: 0.808</li><li>Sex: M</li></ul>",
-    "<ul><li>Age Class: <5</li><li>Mean Height: 0.859</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: >12</li><li>Mean Height: 1.637</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: >12</li><li>Mean Height: 1.668</li><li>Sex: M</li></ul>",
-    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.126</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.239</li><li>Sex: M</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "dodge1.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
 
 test_that("position dodge - no missing data, incl. faceting", {
@@ -303,17 +265,13 @@ test_that("position dodge - no missing data, incl. faceting", {
   varDict <- list(age_class = "Age Class",
                   height = "Mean Height",
                   sex = "Sex")
-  tt <- lapply(list(p0, p1, p2), function(p) testgetTooltip(p, varDict))
-  expected_output <- c(
-    "<ul><li>Age Class: <5</li><li>Mean Height: 0.808</li><li>Sex: M</li></ul>",
-    "<ul><li>Age Class: <5</li><li>Mean Height: 0.859</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: >12</li><li>Mean Height: 1.637</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: >12</li><li>Mean Height: 1.668</li><li>Sex: M</li></ul>",
-    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.126</li><li>Sex: F</li></ul>",
-    "<ul><li>Age Class: 5-12</li><li>Mean Height: 1.239</li><li>Sex: M</li></ul>"
-  )
+  tt <- lapply(list(p0, p1, p2), function(p) testGetTooltipData(p, varDict))
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "dodge2.rds"),
+    package = "ggtips"
+  ))
   lapply(tt, function(t) {
-    expect_equivalent(t$rect$data[order(t$rect$data$tooltip), "tooltip"], expected_output)
+    expect_equivalent(t, expected_output)
   })
 })
 
@@ -324,7 +282,7 @@ test_that("One bar with ggplot default fill is handled properly", {
   p2 <- p0 + geom_bar(fill = "#a0b0f0")
   varDict <- list(category = "Category")
   tts <- lapply(list(p1, p2), function(p) {
-    tt <- testgetTooltip(p, varDict)
+    tt <- testGetTooltip(p, varDict)
     expect_true(is.list(tt$rect$colors))
     expect_length(tt$rect$colors, 1)
     expect_length(unlist(tt$rect$colors), 1)
@@ -344,19 +302,12 @@ test_that("missing data is handled properly - random cells - position dodge", {
     data = d_miss_rand,
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 10</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: NA</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 5</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: NA</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 3</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "dodge3.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
 
 test_that("missing data is handled properly - whole group all variables - position dodge", {
@@ -368,15 +319,12 @@ test_that("missing data is handled properly - whole group all variables - positi
     data = d_miss_cyl,
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 4</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 3</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: NA</li><li>Value: 11</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "dodge4.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
 
 test_that("missing data is handled properly - whole group single variable - position dodge", {
@@ -388,16 +336,10 @@ test_that("missing data is handled properly - whole group single variable - posi
     data = d_miss_gear4_am,
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
-  tt <- testgetTooltip(p, varDict)
-  expected_output <- c(
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 4</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 6</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 0</li><li>Cylinders: 8</li><li>Value: 12</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 4</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 6</li><li>Value: 1</li></ul>",
-    "<ul><li>Auto/Manual: 1</li><li>Cylinders: 8</li><li>Value: 2</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 4</li><li>Value: 8</li></ul>",
-    "<ul><li>Auto/Manual: NA</li><li>Cylinders: 6</li><li>Value: 4</li></ul>"
-  )
-  expect_equivalent(tt$rect$data[order(tt$rect$data$tooltip), "tooltip"], expected_output)
+  tt <- testGetTooltipData(p, varDict)
+  expected_output <- readRDS(system.file(
+    file.path("testdata", "dodge5.rds"),
+    package = "ggtips"
+  ))
+  expect_equivalent(tt, expected_output)
 })
