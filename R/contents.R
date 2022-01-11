@@ -149,9 +149,16 @@ unmapFactorsBarLayer <- function(df, origin, plot, layerData) {
           colors <- plot_scales[["palette.cache"]]
           values <- plot_scales[["range"]][["range"]]
 
+          if (length(colors) > length(values)) {
+            warning("There are more colors than values to match! Tooltips may be incorrect!")
+          }
+
           df[[df_col_idx]] <- sapply(df[[df_col_idx]], function(x) {
             position <- which(colors == x)
             if (length(position) > 0) {
+              if (!is.null(names(colors))) {
+                return(unique(names(colors)[position]))
+              }
               return(values[position])
             }
             return(NA)
