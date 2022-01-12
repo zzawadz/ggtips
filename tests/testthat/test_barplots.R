@@ -1,6 +1,5 @@
 library(ggplot2)
 library(ggtips)
-library(shiny)
 
 #### helpers: ----
 testGetTooltip <- function(p, varDict) {
@@ -16,18 +15,7 @@ testGetTooltip <- function(p, varDict) {
 }
 
 sortDataFrame <- function(x) {
-  # sort the data by all but the last columns in ascending order
-  ord_expr <- sapply(x, function(i) {
-    out <- paste(i, collapse = "','")
-    out <- paste0("c('", substitute(out), "')")
-  })
-  ord_expr <- paste(ord_expr, collapse = ",")
-  ord_expr <- paste0(
-    "x[order(",
-    ord_expr,
-    "), ]"
-  )
-  eval(parse(text = ord_expr))
+  x[do.call(order, as.list(x)), ]
 }
 
 testGetTooltipData <- function(p, varDict) {
