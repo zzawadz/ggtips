@@ -302,7 +302,7 @@ test_that("position dodge - no missing data, incl. faceting", {
                   sex = "Sex")
   tt <- lapply(list(p0, p1, p2), function(p) testGetTooltipData(p, varDict))
   expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge2.rds"),
+    file.path("testdata", "dodge1.rds"),
     package = "ggtips"
   ))
   lapply(tt, function(t) {
