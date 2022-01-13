@@ -226,10 +226,10 @@
       tt
     Output
         Age Class Mean Height Sex
-      2        <5       0.808   M
-      1        <5       0.859   F
-      5       >12       1.637   F
-      6       >12       1.668   M
+      5        12       1.637   F
+      6        12       1.668   M
+      2         5       0.808   M
+      1         5       0.859   F
       3      5-12       1.126   F
       4      5-12       1.239   M
 
@@ -239,10 +239,10 @@
       t
     Output
         Age Class Mean Height Sex
-      2        <5       0.808   M
-      1        <5       0.859   F
-      5       >12       1.637   F
-      6       >12       1.668   M
+      5        12       1.637   F
+      6        12       1.668   M
+      2         5       0.808   M
+      1         5       0.859   F
       3      5-12       1.126   F
       4      5-12       1.239   M
 
@@ -252,10 +252,10 @@
       t
     Output
         Age Class Mean Height Sex
-      4        <5       0.808   M
-      1        <5       0.859   F
-      3       >12       1.637   F
-      6       >12       1.668   M
+      3        12       1.637   F
+      6        12       1.668   M
+      4         5       0.808   M
+      1         5       0.859   F
       2      5-12       1.126   F
       5      5-12       1.239   M
 
@@ -265,12 +265,12 @@
       t
     Output
         Age Class Mean Height Sex
-      2        <5       0.808   M
-      1        <5       0.859   F
-      5       >12       1.637   F
-      6       >12       1.668   M
-      3      5-12       1.126   F
-      4      5-12       1.239   M
+      1        12       1.637   F
+      2        12       1.668   M
+      4         5       0.808   M
+      3         5       0.859   F
+      5      5-12       1.126   F
+      6      5-12       1.239   M
 
 # missing data is handled properly - random cells - position dodge
 
