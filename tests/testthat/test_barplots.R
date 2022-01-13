@@ -15,6 +15,8 @@ testGetTooltip <- function(p, varDict) {
 }
 
 sortDataFrame <- function(x) {
+  factors <- which(sapply(x, is.factor))
+  x[, factors] <- lapply(factors, function(i) as.character(x[, i]))
   x[do.call(order, as.list(x)), ]
 }
 
