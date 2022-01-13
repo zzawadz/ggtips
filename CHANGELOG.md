@@ -1,3 +1,6 @@
+## 0.7.2
+### Implementation of tooltips for bar plots
+
 ## 0.7.1
 ### Bugs
 * Handle case when there are no valid points for geom coordinates
