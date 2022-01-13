@@ -20,7 +20,7 @@ sortDataFrame <- function(x) {
 
 testGetTooltipData <- function(p, varDict) {
   b <- ggplot2::ggplot_build(p)
-  d <- getTooltipData(
+  d <- ggtips:::getTooltipData(
     plot = p,
     built = b,
     varDict = varDict,
@@ -73,7 +73,8 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no fac
   expected_output <- data.frame(
     "Auto/Manual" = as.character(rep(c(0, 1), each = 3)),
     "Cylinders" = as.character(rep(c(4, 6, 8), 2)),
-    "Value" = c(3, 4, 12, 8, 3, 2)
+    "Value" = c(3, 4, 12, 8, 3, 2),
+    stringsAsFactors = FALSE
   )
 
   expect_equivalent(tts_data[[1]], expected_output)
@@ -83,7 +84,6 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no fac
 
 ###### facets ----
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes", {
-  varDict <- list(am = "Auto/Manual", cyl = "Cylinders", gear = "Gear", count = "Value")
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) +
     geom_bar() +
@@ -130,7 +130,6 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes
 })
 
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - grid", {
-  varDict <- list(am = "Auto/Manual", cyl = "Cylinders", gear = "Gear", count = "Value")
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) +
     geom_bar() +
@@ -321,7 +320,8 @@ test_that("One bar with ggplot default fill is handled properly", {
     expect_true(is.list(tt$rect$colors))
     expect_length(tt$rect$colors, 1)
     expect_length(unlist(tt$rect$colors), 1)
-    expect_equivalent(tt$rect$data$tooltip, "<ul><li>Category: X</li></ul>")
+    tt_data <- testGetTooltipData(p, varDict)
+    expect_equivalent(tt_data, "X")
     tt
   })
   expect_equal(tolower(tts[[2]]$rect$colors[[1]]), "#a0b0f0")
@@ -378,3 +378,4 @@ test_that("missing data is handled properly - whole group single variable - posi
   ))
   expect_equivalent(tt, expected_output)
 })
+
