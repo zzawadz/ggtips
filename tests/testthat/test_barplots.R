@@ -42,6 +42,7 @@ varDict <- list(am = "Auto/Manual", cyl = "Cylinders", count = "Value")
 #### TESTS ----
 ###### no facets ----
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no factes", {
+  local_edition(3)
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) + geom_bar()
 
@@ -66,24 +67,18 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - no fac
     tt_data <- tt[["rect"]][["data"]]
     tt_data[order(tt_data$tooltip), ]
   })
-  expect_equivalent(tts[[1]], tts[[2]])
-  expect_equivalent(tts[[1]], tts[[3]])
+  expect_equal(tts[[1]], tts[[2]], ignore_attr = TRUE)
+  expect_equal(tts[[3]], tts[[2]], ignore_attr = TRUE)
 
   tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
-  expected_output <- data.frame(
-    "Auto/Manual" = as.character(rep(c(0, 1), each = 3)),
-    "Cylinders" = as.character(rep(c(4, 6, 8), 2)),
-    "Value" = c(3, 4, 12, 8, 3, 2),
-    stringsAsFactors = FALSE
-  )
-
-  expect_equivalent(tts_data[[1]], expected_output)
-  expect_equivalent(tts_data[[2]], expected_output)
-  expect_equivalent(tts_data[[3]], expected_output)
+  expect_snapshot(tts_data[[1]])
+  expect_snapshot(tts_data[[2]])
+  expect_snapshot(tts_data[[3]])
 })
 
 ###### facets ----
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes", {
+  local_edition(3)
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) +
     geom_bar() +
@@ -115,21 +110,18 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - factes
     tt_data <- tt[["rect"]][["data"]]
     tt_data[order(tt_data$tooltip), ]
   })
-  expect_equivalent(tts[[1]], tts[[2]])
-  expect_equivalent(tts[[1]], tts[[3]])
+  expect_equal(tts[[1]], tts[[2]], ignore_attr = TRUE)
+  expect_equal(tts[[1]], tts[[3]], ignore_attr = TRUE)
 
   tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "am_cyl_by_gear_facets.rds"),
-    package = "ggtips"
-  ))
 
-  expect_equivalent(tts_data[[1]], expected_output)
-  expect_equivalent(tts_data[[2]], expected_output)
-  expect_equivalent(tts_data[[3]], expected_output)
+  expect_snapshot(tts_data[[1]])
+  expect_snapshot(tts_data[[2]])
+  expect_snapshot(tts_data[[3]])
 })
 
 test_that("geom_bar, geom_col, data pre-aggregated are handled properly - grid", {
+  local_edition(3)
   p1 <- ggplot(data = d,
                aes(x = am, fill = cyl)) +
     geom_bar() +
@@ -161,74 +153,62 @@ test_that("geom_bar, geom_col, data pre-aggregated are handled properly - grid",
     tt_data <- tt[["rect"]][["data"]]
     tt_data[order(tt_data$tooltip), ]
   })
-  expect_equivalent(tts[[1]], tts[[2]])
-  expect_equivalent(tts[[1]], tts[[3]])
+  expect_equal(tts[[1]], tts[[2]], ignore_attr = TRUE)
+  expect_equal(tts[[1]], tts[[3]], ignore_attr = TRUE)
 
   tts_data <- lapply(list(p1, p2, p3), function(p) testGetTooltipData(p, varDict))
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "am_cyl_by_gear_facets.rds"),
-    package = "ggtips"
-  ))
 
-  expect_equivalent(tts_data[[1]], expected_output)
-  expect_equivalent(tts_data[[2]], expected_output)
-  expect_equivalent(tts_data[[3]], expected_output)
+  expect_snapshot(tts_data[[1]])
+  expect_snapshot(tts_data[[2]])
+  expect_snapshot(tts_data[[3]])
 })
 ####
 ###### missing data ----
 test_that("missing data is handled properly - random cells", {
-    d_miss_rand <- readRDS(file = system.file(
-      file.path("testdata", "missings_random_cells.rds"),
-      package = "ggtips"
-    ))
-    p <- ggplot(
-      data = d_miss_rand,
-      aes(x = am, fill = cyl)
-    ) + geom_bar()
-    tt <- testGetTooltipData(p, varDict)
-    expected_output <- readRDS(system.file(
-      file.path("testdata", "am_cyl_missings.rds"),
-      package = "ggtips"
-    ))
-    expect_equivalent(tt, expected_output)
+  local_edition(3)
+  d_miss_rand <- readRDS(file = system.file(
+    file.path("testdata", "missings_random_cells.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_rand,
+    aes(x = am, fill = cyl)
+  ) + geom_bar()
+  tt <- testGetTooltipData(p, varDict)
+  expect_snapshot(tt)
 })
 
 test_that("missing data is handled properly - whole group all variables", {
-    d_miss_cyl <- readRDS(system.file(
-      file.path("testdata", "missings_cyl4.rds"),
-      package = "ggtips"
-    ))
-    p <- ggplot(
-      data = d_miss_cyl,
-      aes(x = am, fill = cyl)
-    ) + geom_bar()
-    tt <- testGetTooltipData(p, varDict)
-    expected_output <- readRDS(system.file(
-      file.path("testdata", "am_cyl_missings2.rds"),
-      package = "ggtips"
-    ))
-    expect_equivalent(tt, expected_output)
+  local_edition(3)
+  d_miss_cyl <- readRDS(system.file(
+    file.path("testdata", "missings_cyl4.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_cyl,
+    aes(x = am, fill = cyl)
+  ) + geom_bar()
+  tt <- testGetTooltipData(p, varDict)
+  expect_snapshot(tt)
 })
 
 test_that("missing data is handled properly - whole group single variable", {
-    d_miss_gear4_am <- readRDS(system.file(
-      file.path("testdata", "missings_gear4_am.rds"),
-      package = "ggtips"
-    ))
-    p <- ggplot(
-      data = d_miss_gear4_am,
-      aes(x = am, fill = cyl)
-    ) + geom_bar()
-    tt <- testGetTooltipData(p, varDict)
-    expected_output <- readRDS(system.file(
-      file.path("testdata", "am_cyl_missings3.rds"),
-      package = "ggtips"
-    ))
-    expect_equivalent(tt, expected_output)
+  local_edition(3)
+  d_miss_gear4_am <- readRDS(system.file(
+    file.path("testdata", "missings_gear4_am.rds"),
+    package = "ggtips"
+  ))
+  p <- ggplot(
+    data = d_miss_gear4_am,
+    aes(x = am, fill = cyl)
+  ) + geom_bar()
+  tt <- testGetTooltipData(p, varDict)
+  expect_snapshot(tt)
 })
 
 ###### missing data with facets ----
-test_that("missing data is handled properly - random cells", {
+test_that("missing data is handled properly - random cells 2", {
+  local_edition(3)
   d_miss_rand <- readRDS(file = system.file(
     file.path("testdata", "missings_random_cells.rds"),
     package = "ggtips"
@@ -238,14 +218,11 @@ test_that("missing data is handled properly - random cells", {
     aes(x = am, fill = cyl)
   ) + geom_bar() + facet_wrap("gear")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "am_cyl_missings4.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
-test_that("missing data is handled properly - random cells", {
+test_that("missing data is handled properly - random cells 3", {
+  local_edition(3)
   d_miss_cyl <- readRDS(system.file(
     file.path("testdata", "missings_cyl4.rds"),
     package = "ggtips"
@@ -255,15 +232,12 @@ test_that("missing data is handled properly - random cells", {
     aes(x = am, fill = cyl)
   ) + geom_bar() + facet_wrap("gear")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "am_cyl_missings5.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
 ###### position dodge ----
 test_that("position dodge - no missing data", {
+  local_edition(3)
   d <- readRDS(system.file(
     file.path("testdata", "height_synthetic_data.rds"),
     package = "ggtips"
@@ -276,14 +250,11 @@ test_that("position dodge - no missing data", {
                   height = "Mean Height",
                   sex = "Sex")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge1.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
 test_that("position dodge - no missing data, incl. faceting", {
+  local_edition(3)
   d <- readRDS(system.file(
     file.path("testdata", "height_synthetic_data.rds"),
     package = "ggtips"
@@ -299,18 +270,15 @@ test_that("position dodge - no missing data, incl. faceting", {
   varDict <- list(age_class = "Age Class",
                   height = "Mean Height",
                   sex = "Sex")
-  tt <- lapply(list(p0, p1, p2), function(p) testGetTooltipData(p, varDict))
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge1.rds"),
-    package = "ggtips"
-  ))
-  lapply(tt, function(t) {
-    expect_equivalent(t, expected_output)
+  lapply(list(p0, p1, p2), function(p) {
+    t <- testGetTooltipData(p, varDict)
+    expect_snapshot(t)
   })
 })
 
 ###### tests for only one bar
 test_that("One bar with ggplot default fill is handled properly", {
+  local_edition(3)
   p0 <- ggplot(data = data.frame(category = factor("X")), aes(x = category))
   p1 <- p0 + geom_bar()
   p2 <- p0 + geom_bar(fill = "#a0b0f0")
@@ -321,7 +289,7 @@ test_that("One bar with ggplot default fill is handled properly", {
     expect_length(tt$rect$colors, 1)
     expect_length(unlist(tt$rect$colors), 1)
     tt_data <- testGetTooltipData(p, varDict)
-    expect_equivalent(tt_data, "X")
+    expect_equal(tt_data, "X")
     tt
   })
   expect_equal(tolower(tts[[2]]$rect$colors[[1]]), "#a0b0f0")
@@ -329,6 +297,7 @@ test_that("One bar with ggplot default fill is handled properly", {
 
 ###### ~ missing data ----
 test_that("missing data is handled properly - random cells - position dodge", {
+  local_edition(3)
   d_miss_rand <- readRDS(file = system.file(
     file.path("testdata", "missings_random_cells.rds"),
     package = "ggtips"
@@ -338,14 +307,11 @@ test_that("missing data is handled properly - random cells - position dodge", {
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge3.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
 test_that("missing data is handled properly - whole group all variables - position dodge", {
+  local_edition(3)
   d_miss_cyl <- readRDS(system.file(
     file.path("testdata", "missings_cyl4.rds"),
     package = "ggtips"
@@ -355,14 +321,11 @@ test_that("missing data is handled properly - whole group all variables - positi
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge4.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
 test_that("missing data is handled properly - whole group single variable - position dodge", {
+  local_edition(3)
   d_miss_gear4_am <- readRDS(system.file(
     file.path("testdata", "missings_gear4_am.rds"),
     package = "ggtips"
@@ -372,10 +335,6 @@ test_that("missing data is handled properly - whole group single variable - posi
     aes(x = am, fill = cyl)
   ) + geom_bar(position = "dodge")
   tt <- testGetTooltipData(p, varDict)
-  expected_output <- readRDS(system.file(
-    file.path("testdata", "dodge5.rds"),
-    package = "ggtips"
-  ))
-  expect_equivalent(tt, expected_output)
+  expect_snapshot(tt)
 })
 
