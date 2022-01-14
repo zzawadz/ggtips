@@ -1,5 +1,6 @@
-## 0.7.2
-### Implementation of tooltips for bar plots
+## 0.8.0
+### Features
+* Implementation of tooltips for bar plots
 
 ## 0.7.1
 ### Bugs
