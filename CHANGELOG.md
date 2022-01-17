@@ -1,3 +1,7 @@
+## 0.8.1
+### Bugs
+* fix random tooltip rendering issue (when SVG was not yet properly rendered)
+
 ## 0.8.0
 ### Features
 * Implementation of tooltips for bar plots

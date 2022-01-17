@@ -179,9 +179,12 @@ htmlWithGivenTooltips <- function(svg,
 
   id <- as.numeric(Sys.time())*1000
 
+  ## Timeout is to run code on next render (even loop cycle)
   script <- paste0(
     "<script>",
-    "$('[data-id=\"%s\"]').closest('.shiny-html-output').ggtips(%s);",
+    "setTimeout(function() {",
+      "$('[data-id=\"%s\"]').closest('.shiny-html-output').ggtips(%s);",
+    "}, 0)",
     "</script>"
   )
 
