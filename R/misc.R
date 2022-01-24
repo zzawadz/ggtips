@@ -56,7 +56,7 @@ freezeFactorLevels <- function(df, characterToFactor = FALSE){
 }
 
 #' load Front-End dependencies (use this function in any rendered content and
-#' it will the files only ones)
+#' it will load the files only once)
 getDependencies <- function() {
   htmltools::htmlDependency(
     name = "ggtips",
