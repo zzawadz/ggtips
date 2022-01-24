@@ -1,3 +1,7 @@
+## 0.8.2
+### Bugs
+* fix broken resize shiny event (used by execOnResize on renderPlot)
+
 ## 0.8.1
 ### Bugs
 * fix random tooltip rendering issue (when SVG was not yet properly rendered)

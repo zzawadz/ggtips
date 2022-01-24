@@ -1,8 +1,8 @@
 /**@license
  *
- * Custom resize jQuery event for element (version 1.1.0)
+ * Custom resize jQuery event for element (version 1.1.1)
  *
- * Copyright (c) 2018-2019 Jakub T. Jankiewicz <https://jcubic.pl/me>
+ * Copyright (c) 2018-2022 Jakub T. Jankiewicz <https://jcubic.pl/me>
  * Released under the MIT license
  *
  */
@@ -166,7 +166,7 @@
             }
         },
         handle: function(event, data) {
-            window_events.fireWith(window, event, data);
+            event.handleObj.handler.call(this, event, data);
         }
     };
 });
