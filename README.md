@@ -126,17 +126,18 @@ about configuring Docker and
 to learn about *docker-machine* itself.
 
 ## Acknowledge
-
 * The library uses [jQuery.resize](https://github.com/jcubic/jquery.resize) by [Jakub T. Jankiewicz](https://github.com/jcubic).
+* Logo designed by [Jakub T. Jankiewicz](https://github.com/jcubic).
 
-## Contributors
-<!-- CONTRIBUTORS-START -->
+## Maintainers
 * [Paweł Piątkowski](https://github.com/cosi1)
 * [Jakub T. Jankiewicz](https://github.com/jcubic)
+
+## Other Contributors
+<!-- CONTRIBUTORS-START -->
 * [Marcin Kamianowski](https://github.com/marcin-kam)
 * [Michał Jakubczak](https://github.com/mjakubczak)
 * [Ewa Ostrowiecka](https://github.com/ewaostrowiecka)
-* Michal Bartczak
 * [Adam Golubowski](https://github.com/adamgolubowski)
 * [Jakub Malecki](https://github.com/OliBravo)
 <!-- CONTRIBUTORS-END -->
