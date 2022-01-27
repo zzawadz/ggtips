@@ -1,3 +1,7 @@
+## 0.8.3
+### Bugs
+* fix issue on bar plot with horizontal rectangle occupy whole width and the tooltip wa cut off (by left edge)
+
 ## 0.8.2
 ### Bugs
 * fix broken resize shiny event (used by execOnResize on renderPlot)

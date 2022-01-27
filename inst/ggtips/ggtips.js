@@ -1,3 +1,4 @@
+//# sourceURL=ggtips.js
 /**
  * this file is part of ggtips (R package to display tooltips on svg ggplot)
  *
@@ -219,6 +220,8 @@ if (typeof jQuery === 'undefined') {
     // -------------------------------------------------------------------------
     // :: position tooltip based on container and given element
     // -------------------------------------------------------------------------
+    var TRIANGLE_WIDTH = 8;
+    // -------------------------------------------------------------------------
     $.fn.ggTooltip = function(options) {
         var box;
         if (options.box) {
@@ -227,16 +230,18 @@ if (typeof jQuery === 'undefined') {
             box = options.element.getBoundingClientRect();
         }
         var offset = options.container.getBoundingClientRect();
-        var top = box.top - (this.height() / 2) +
+        var top = 2 + box.top - (this.height() / 2) +
                            (box.height / 2) - offset.top;
         var tooltipWidth = this.prop('clientWidth');
-        // 5px to compensate for ::before triangle
-        var left = box.left + box.width + 5 - offset.left;
+        var left = box.left + box.width + TRIANGLE_WIDTH - offset.left;
         var $container = $(options.container);
-        var rAlign = left + tooltipWidth + 5 > $container.width();
+        var rAlign = left + tooltipWidth + TRIANGLE_WIDTH > $container.width();
         if (rAlign) {
-            // 5 - triangle width
-            left = box.left - 5 - offset.left - tooltipWidth;
+            left = box.left - TRIANGLE_WIDTH - offset.left - tooltipWidth;
+            if (left < 0) {
+                left = box.left + box.width;
+                left = left - offset.left - tooltipWidth - TRIANGLE_WIDTH;
+            }
         }
         this.toggleClass('ggtips-tooltip-right', rAlign);
         this.css({
