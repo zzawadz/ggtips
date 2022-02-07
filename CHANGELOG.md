@@ -1,3 +1,7 @@
+## 0.8.4
+### Bugs
+* fix when generating tooltips and there are no points on the plot
+
 ## 0.8.3
 ### Bugs
 * fix issue on bar plot with horizontal rectangle occupy whole width and the tooltip wa cut off (by left edge)
