@@ -103,7 +103,7 @@ getTooltips <- function(plot,
       })
       coords <- do.call(rbind, coords)
       if (is.null(coords)) {
-        NULL
+        return(NULL)
       } else {
         coords$x <- coords$x / plotWidth
         coords$y <- 1 - coords$y / plotHeight
