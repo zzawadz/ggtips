@@ -1,3 +1,7 @@
+## 0.8.5
+### Bugs
+* fix invalid detection of plots on box plot
+
 ## 0.8.4
 ### Bugs
 * fix when generating tooltips and there are no points on the plot
