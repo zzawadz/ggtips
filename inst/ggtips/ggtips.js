@@ -92,7 +92,7 @@ if (typeof jQuery === 'undefined') {
                 'line:size(' + settings.size + ')' + css,
                 'line:size(' + settings.size + ', 0)' + css,
                 'polyline:diamond:size(' + settings.size + ')',
-                'polygon'
+                'polygon:size(' + settings.size + ')'
             ];
             if (data.rect.data) {
                 var rects = settings.data.rect.colors.map(color => {
