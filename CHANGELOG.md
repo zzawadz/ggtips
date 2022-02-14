@@ -1,3 +1,7 @@
+## 0.8.6
+### Bugs
+* fix handling ghost points on the plots
+
 ## 0.8.5
 ### Bugs
 * fix invalid detection of plots on box plot

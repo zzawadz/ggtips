@@ -110,7 +110,7 @@ if (typeof jQuery === 'undefined') {
             //       * split point by trelis panel
             $svg.find(selector).each(function() {
                 var $e = $(this);
-                if (isElementCliped($e)) {
+                if (isElementCliped($e) || isGhostElement($e)) {
                     return;
                 }
                 var point, p;
@@ -261,7 +261,13 @@ if (typeof jQuery === 'undefined') {
             }, 0);
         }
     }
-
+    // -------------------------------------------------------------------------
+    // :: check if element is visible
+    // -------------------------------------------------------------------------
+    function isGhostElement(element) {
+        var $e = $(element);
+        return $e.css('fill') === 'none' && $e.css('stroke') === 'none';
+    }
     // -------------------------------------------------------------------------
     // :: check if element is outside of clip-path
     // -------------------------------------------------------------------------
