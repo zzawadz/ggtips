@@ -1,3 +1,8 @@
+## 0.8.7
+### Bugs
+* fix ghost tooltips when user don't privide data for tooltips
+* fix case when old tooltip data is stored in database
+
 ## 0.8.6
 ### Bugs
 * fix handling ghost points on the plots

@@ -121,14 +121,21 @@ if (typeof jQuery === 'undefined') {
                 } else if ($e.is('polygon')) { // pie chart
                     // TODO: add pie charts
                 }
+                var points = data.points.data || data.points;
                 // try points, that can also be rect or polygon
-                if (!p && data.points.data) {
+                if (!p && points) {
                     point = getPoint($svg, $e);
-                    p = findData(data.points.data, point, tolerance('points'));
+                    p = findData(points, point, tolerance('points'));
                 }
                 if (p) {
-                    $e.data('raw', p); // for debug
-                    $e.data('tooltip', p.tooltip);
+                    if (p.tooltip) {
+                        // check if there is any text in tooltip
+                        var text = p.tooltip.replace(/<[^>]+>/gi, '');
+                        if (text) {
+                            $e.data('raw', p); // for debug
+                            $e.data('tooltip', p.tooltip);
+                        }
+                    }
                 }
             });
             if (settings.follow) {
