@@ -247,11 +247,11 @@ removeOutOfRangeData <- function(data, plot, built) {
     range <- getRanges(plot, built)
 
     if (is(plot$coordinates, "CoordFlip") && isGgplot2()) {
-      d <- d[d$x >= min(range$y) & d$x <= max(range$y), ]
-      d <- d[d$y >= min(range$x) & d$y <= max(range$x), ]
+      d <- d[!is.na(d$x) & d$x >= min(range$y) & d$x <= max(range$y), ]
+      d <- d[!is.na(d$y) & d$y >= min(range$x) & d$y <= max(range$x), ]
     } else {
-      d <- d[d$x >= min(range$x) & d$x <= max(range$x), ]
-      d <- d[d$y >= min(range$y) & d$y <= max(range$y), ]
+      d <- d[!is.na(d$x) & d$x >= min(range$x) & d$x <= max(range$x), ]
+      d <- d[!is.na(d$y) & d$y >= min(range$y) & d$y <= max(range$y), ]
     }
 
     d
