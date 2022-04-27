@@ -1,3 +1,7 @@
+## 0.8.8
+### Bugs
+* fix a bug that occurs when there are NAs in x/y mappings (submitted by @zzawadz as #108)
+
 ## 0.8.7
 ### Bugs
 * fix ghost tooltips when user don't privide data for tooltips
